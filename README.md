@@ -25,8 +25,6 @@ Python game using the Pygame libraly.
   - [ ] Complete the 2 Level
   - [ ] Complete the 3 Level
   - [ ] Complete the 4 Level
-  - [ ] Acrobat
-  - [ ] Trickster
   - [ ] Defeat the Boss
   - [ ] Pacifist
   - [ ] Codebreaker (Beat Developer Time)
