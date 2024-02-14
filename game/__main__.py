@@ -1,7 +1,5 @@
-import src
-
-def main():
-    pass
+"""Main init file."""
+from game import main
 
 match __name__:
     case "__main__":
