@@ -35,8 +35,9 @@ Python game using the Pygame libraly.
 ## Install
 [Python, Pip](https://www.python.org/downloads/)
 ```powershell
-py.exe -m pip install pygame
-git clone https://github.com/ucenyp23/game.git
+py.exe -m pip requirements.txt
+git clone https://github.com/ucenyp23/game_project.git
+cd game_project
 py.exe game 
 ```
 
