@@ -16,7 +16,9 @@ def main():
     sprites = pygame.sprite.Group()
 
     while True:
-        events()
+        match False:
+            case events():
+                break
         sprites.update()
         sprites.draw()
         pygame.display.update()
