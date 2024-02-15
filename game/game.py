@@ -1,10 +1,10 @@
 """The main game loop."""
 import pygame
-from config import x 
-from player import x
-from events import x
-from enemies import x
-from scenes import x
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, PLAYER_SPEED, PLAYER_MAX_JUMPS
+from player import Player
+from events import events
+from enemies import Kamikaze, Slasher, Impaler, Boss
+from scenes import MainMenu, Levels, Scoreboard
 
 def main():
     """Main function of the game"""
@@ -20,6 +20,6 @@ def main():
         sprites.update()
         sprites.draw()
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(FRAME_RATE)
 
     pygame.quit()
