@@ -7,29 +7,26 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.centerx = PLAYER_X
         self.rect.bottom = PLAYER_Y
-        self.vel = pygame.Vector2(0, 0)
+        self.velocity = pygame.Vector2(0, 0)
+        self.player_movement_zone = pygame.Rect(int(SCREEN_WIDTH / 3), int(SCREEN_HEIGHT / 3), int(SCREEN_WIDTH / 3), int(SCREEN_HEIGHT / 3))
         self.gravity = GRAVITY
         self.jump_counter = 0
 
     def update(self, delta_time):
         """Update the velocity and position of the player."""
-        self.vel.y += self.gravity * delta_time
-        self.rect.x += self.vel.x * delta_time
-        self.rect.y += self.vel.y * delta_time
-        self._collision()
-
-    def _collision(self):
-        """Check for collisions with the screen boundaries."""        
-        self.rect.clamp_ip(pygame.Rect(SCREEN_WIDTH * (2/3), SCREEN_HEIGHT * (2/3), SCREEN_WIDTH / 3, SCREEN_HEIGHT / 3))
-        
         match self.rect.bottom:
-            case BOTTOM_BOUND:
-                self.vel.y = 0
+            case player_movement_zone.bottom:
+                self.velocity.y = 0
                 self.jump_counter = 0
+            case _:
+                self.velocity.y += self.gravity * delta_time
+                self.rect.y += self.velocity.y * delta_time
+        self.rect.x += self.velocity.x * delta_time
+        self.rect.clamp_ip(self.player_movement_zone)
 
     def move(self, direction):
         """Move the player horizontally."""
-        self.vel.x = direction * PLAYER_SPEED
+        self.velocity.x = direction * PLAYER_SPEED
 
     def jump(self):
         """Make the player jump."""
