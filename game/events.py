@@ -1,4 +1,4 @@
-def events(player, running):
+def events(player):
     """Handle events."""
     for event in pygame.event.get():
         match event.type:

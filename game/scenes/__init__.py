@@ -1,3 +1,3 @@
-from main_menu import MainMenu
-from levels import Levels
-from scoreboard import Scoreboard
+from main_menu import main_menu
+from levels import levels
+from scoreboard import scoreboard

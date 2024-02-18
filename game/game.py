@@ -1,10 +1,9 @@
 """The main game loop."""
 import pygame
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, PLAYER_SPEED, PLAYER_MAX_JUMPS
-from player import Player
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, PLAYER_SPEED, PLAYER_MAX_JUMP
 from events import events
-from enemies import Kamikaze, Slasher, Impaler, Boss
-from scenes import MainMenu, Levels, Scoreboard
+from scenes import main_menu, levels, scoreboard
+from entities import Kamikaze, Slasher, Impaler, Boss
 
 def main():
     """Main function of the game"""
@@ -13,15 +12,13 @@ def main():
     pygame.display.set_caption("Game")
     clock = pygame.time.Clock()
 
-    sprites = pygame.sprite.Group()
-
     while True:
-        match False:
-            case events():
+        match main_menu(screen):
+            case _ in range(5):
+                levels(screen, _)
+            case 5:
+                scoreboard()
+            case 6:
                 break
-        sprites.update()
-        sprites.draw()
-        pygame.display.update()
-        clock.tick(FRAME_RATE)
 
     pygame.quit()

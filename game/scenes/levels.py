@@ -1,0 +1,11 @@
+def levels(screen, level_number):
+    dt = 0
+    while True:
+        match events():
+            case False:
+                break
+        events()
+        sprites.update(dt)
+        sprites.draw(screen)
+        pygame.display.update()
+        dt = clock.tick(FRAME_RATE) / 1000
