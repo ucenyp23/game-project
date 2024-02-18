@@ -8,4 +8,4 @@ def levels(screen, level_number):
         sprites.update(dt)
         sprites.draw(screen)
         pygame.display.update()
-        dt = clock.tick(FRAME_RATE) / 1000
+        dt = clock.tick(60) / 1000

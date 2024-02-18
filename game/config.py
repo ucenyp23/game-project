@@ -1,8 +1,0 @@
-"""Screen config"""
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
-FRAME_RATE = 60
-
-"""Player config"""
-PLAYER_SPEED = 1000.0
-PLAYER_MAX_JUMPS = 2

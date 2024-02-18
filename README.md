@@ -21,16 +21,17 @@ Python game using the Pygame libraly.
   - [ ] 4 Level
   - [ ] Boss Level
 - [ ] Achievements
-  - [ ] Complete the 1 Level
-  - [ ] Complete the 2 Level
-  - [ ] Complete the 3 Level
-  - [ ] Complete the 4 Level
+  - [ ] Complete 1 Level
+  - [ ] Complete 2 Level
+  - [ ] Complete 3 Level
+  - [ ] Complete 4 Level
   - [ ] Defeat the Boss
   - [ ] Pacifist
   - [ ] Codebreaker (Beat Developer Time)
 - [ ] UI
   - [ ] Main Menu
   - [ ] Scoreboard
+- [ ] Creadits
 
 ## Install
 [Python, Pip](https://www.python.org/downloads/)
