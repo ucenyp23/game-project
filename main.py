@@ -6,9 +6,9 @@ BLACK = (0, 0, 0)
 PURPLE = (100, 0, 100)
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-PLAYER_WIDTH = 40
-PLAYER_HEIGHT = 120
-PLAYER_SPEED = 1000
+PLAYER_WIDTH = 32
+PLAYER_HEIGHT = 128
+PLAYER_SPEED = 1024
 PLAYER_MAX_JUMPS = 2
 GROUND_HEIGHT = 100
 
@@ -23,7 +23,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.acc = pygame.Vector2(0, 0)
-        self.jump_timer = 0
         self.jump_counter = 0
 
     def update(self, delta_time):
@@ -32,7 +31,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.vel.x * delta_time
         self.rect.y += self.vel.y * delta_time
         self._check_collisions()
-        self.jump_timer -= delta_time * 1000
 
     def _check_collisions(self):
         """Check for collisions with the screen boundaries."""
@@ -60,9 +58,7 @@ class Player(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 def main():
-    """
-    Main function for the game.
-    """
+    """Main function for the game."""
     pygame.init()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
