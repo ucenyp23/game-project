@@ -4,7 +4,6 @@ def levels(screen, level_number):
         match events():
             case False:
                 break
-        events()
         sprites.update(dt)
         sprites.draw(screen)
         pygame.display.update()

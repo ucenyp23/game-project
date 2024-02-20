@@ -7,12 +7,11 @@ class Slasher(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.bottom = y
-        self.velocity = pygame.Vector2(0, 0)
 
     def update(self, delta_time):
         """Update the velocity and position of the player."""
-        self.rect.y += self.velocity.y * delta_time
-        self.rect.x += self.velocity.x * delta_time
+        self.rect.y = self.player_y
+        self.rect.x = self.player_x
 
     def draw(self, screen):
         """Draw the player on the screen."""

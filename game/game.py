@@ -13,8 +13,14 @@ def main():
 
     while True:
         match main_menu(screen):
-            case _ in range(5):
-                levels(screen, _)
+            case 1:
+                levels(screen, 1)
+            case 2:
+                levels(screen, 1)
+            case 3:
+                levels(screen, 1)
+            case 4:
+                levels(screen, 1)
             case 5:
                 scoreboard()
             case 6:
