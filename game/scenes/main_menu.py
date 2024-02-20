@@ -1,3 +1,5 @@
+from events import events
+
 def main_menu(screen):
     while True:
         match events():

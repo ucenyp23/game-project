@@ -1,3 +1,5 @@
+from events import events
+
 def scoreboard(screen):
     while True:
         match events():

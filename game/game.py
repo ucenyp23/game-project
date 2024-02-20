@@ -1,8 +1,6 @@
 """The main game loop."""
 import pygame
-from events import events
 from scenes import main_menu, levels, scoreboard
-from entities import Kamikaze, Slasher, Impaler, Boss
 
 def main():
     """Main function of the game"""
@@ -16,11 +14,11 @@ def main():
             case 1:
                 levels(screen, 1)
             case 2:
-                levels(screen, 1)
+                levels(screen, 2)
             case 3:
-                levels(screen, 1)
+                levels(screen, 3)
             case 4:
-                levels(screen, 1)
+                levels(screen, 4)
             case 5:
                 scoreboard()
             case 6:
