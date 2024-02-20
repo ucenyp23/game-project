@@ -20,7 +20,7 @@ def main():
             case 4:
                 levels(screen, 4)
             case 5:
-                scoreboard()
+                scoreboard(screeen)
             case 6:
                 break
 
