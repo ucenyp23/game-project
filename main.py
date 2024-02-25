@@ -8,7 +8,7 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 PLAYER_WIDTH = 32
 PLAYER_HEIGHT = 128
-PLAYER_SPEED = 1024
+PLAYER_SPEED = 896
 PLAYER_MAX_JUMPS = 2
 GROUND_HEIGHT = 100
 
@@ -22,7 +22,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = position_x
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
-        self.acc = pygame.Vector2(0, 0)
         self.jump_counter = 0
 
     def update(self, delta_time):
@@ -83,8 +82,7 @@ def main():
 
 def _game_loop(sprites, screen, clock, player):
     """Main game loop."""
-    running = True
-    while running:
+    while True:
         match _events(player):
             case False:
                 break
