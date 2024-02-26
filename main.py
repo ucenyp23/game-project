@@ -29,9 +29,9 @@ class Player(pygame.sprite.Sprite):
         self.vel.y += PLAYER_SPEED * delta_time
         self.rect.x += self.vel.x * delta_time
         self.rect.y += self.vel.y * delta_time
-        self._check_collisions()
+        self._collisions()
 
-    def _check_collisions(self):
+    def _collisions(self):
         """Check for collisions with the screen boundaries."""
         self.rect.left = max(self.rect.left, 0)
         self.rect.right = min(self.rect.right, SCREEN_WIDTH)
@@ -83,9 +83,8 @@ def main():
 def _game_loop(sprites, screen, clock, player):
     """Main game loop."""
     while True:
-        match _events(player):
-            case False:
-                break
+        if _events(player) == False:
+            break
         sprites.update(clock.get_time() / 1000)
         screen.fill(BLACK)
         sprites.draw(screen)
@@ -94,25 +93,23 @@ def _game_loop(sprites, screen, clock, player):
 
 def _events(player):
     """Handle events."""
-    for event in pygame.event.get():
-        match event.type:
-            case pygame.QUIT:
-                return False
-            case pygame.KEYUP:
-                match event.key:
-                    case pygame.K_a | pygame.K_d:
-                        player.move(0)
-            case pygame.KEYDOWN:
-                match event.key:
-                    case pygame.K_ESCAPE:
-                        return False
-                    case pygame.K_SPACE:
-                        player.jump()
-                    case pygame.K_a:
-                        player.move(-1)
-                    case pygame.K_d:
-                        player.move(1)
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a] and not keys[pygame.K_d]:
+        player.move(-1)
+    elif keys[pygame.K_d] and not keys[pygame.K_a]:
+        player.move(1)
+    else:
+        player.move(0)
 
-match __name__:
-    case '__main__':
-        main()
+    if keys[pygame.K_SPACE]:
+        player.jump()
+
+    if keys[pygame.K_ESCAPE]:
+        return False
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return False
+
+if __name__ == '__main__':
+    main()
