@@ -12,7 +12,6 @@ Python game using the Pygame libraly.
 - [ ] Enemies
   - [ ] Kamikaze
   - [ ] Slasher
-  - [ ] Impaler
   - [ ] Boss
 - [ ] Levels
   - [ ] 1 Level
@@ -26,7 +25,6 @@ Python game using the Pygame libraly.
   - [ ] Complete 3 Level
   - [ ] Complete 4 Level
   - [ ] Defeat the Boss
-  - [ ] Pacifist
   - [ ] Codebreaker (Beat Developer Time)
 - [ ] UI
   - [ ] Main Menu
