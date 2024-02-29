@@ -8,7 +8,6 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 PLAYER_WIDTH = 32
 PLAYER_HEIGHT = 128
-PLAYER_SPEED = 896
 PLAYER_MAX_JUMPS = 2
 GROUND_HEIGHT = 100
 
@@ -23,10 +22,12 @@ class Player(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
+        self.player_speed = 1024
+        self.gravity = 32
 
     def update(self, delta_time):
         """Update the velocity and position of the player."""
-        self.vel.y += PLAYER_SPEED * delta_time
+        self.vel.y += self.gravity
         self.rect.x += self.vel.x * delta_time
         self.rect.y += self.vel.y * delta_time
         self._collisions()
@@ -43,13 +44,12 @@ class Player(pygame.sprite.Sprite):
 
     def move(self, direction):
         """Move the player horizontally."""
-        self.vel.x = direction * PLAYER_SPEED
+        self.vel.x = direction * self.player_speed
 
     def jump(self):
         """Make the player jump."""
         if self.jump_counter < PLAYER_MAX_JUMPS:
-            self.vel.y = -PLAYER_SPEED
-            self.jump_timer = PLAYER_SPEED
+            self.vel.y = -self.player_speed
             self.jump_counter += 1
 
     def draw(self, screen):
@@ -83,7 +83,7 @@ def main():
 def _game_loop(sprites, screen, clock, player):
     """Main game loop."""
     while True:
-        if _events(player) == False:
+        if _events(player) is False:
             break
         sprites.update(clock.get_time() / 1000)
         screen.fill(BLACK)
@@ -110,6 +110,7 @@ def _events(player):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False
+    return None
 
 if __name__ == '__main__':
     main()
