@@ -6,16 +6,15 @@ BLACK = (0, 0, 0)
 PURPLE = (100, 0, 100)
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-PLAYER_WIDTH = 32
-PLAYER_HEIGHT = 128
-PLAYER_MAX_JUMPS = 2
 GROUND_HEIGHT = 100
 
 class Player(pygame.sprite.Sprite):
     """This class represents the player sprite."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.image = pygame.Surface((PLAYER_WIDTH, PLAYER_HEIGHT))
+        self.player_height = 128
+        self.player_width = 64
+        self.image = pygame.Surface((self.player_width, self.player_height))
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
         self.rect.centerx = position_x
@@ -23,6 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
         self.player_speed = 1024
+        self.player_max_jump = 2
         self.gravity = 32
 
     def update(self, delta_time):
@@ -48,7 +48,7 @@ class Player(pygame.sprite.Sprite):
 
     def jump(self):
         """Make the player jump."""
-        if self.jump_counter < PLAYER_MAX_JUMPS:
+        if self.jump_counter < self.player_max_jump:
             self.vel.y = -self.player_speed
             self.jump_counter += 1
 
@@ -101,15 +101,14 @@ def _events(player):
     else:
         player.move(0)
 
-    if keys[pygame.K_SPACE]:
-        player.jump()
-
     if keys[pygame.K_ESCAPE]:
         return False
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False
+        if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+            player.jump()
     return None
 
 if __name__ == '__main__':
