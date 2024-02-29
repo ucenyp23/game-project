@@ -1,49 +1,58 @@
 import random
 
-# Map dimensions
-width, height = 13, 13
+def initialize_layout(width, height):
+    return [[' ' for _ in range(width)] for _ in range(height)]
 
-# Create an empty map
-map = [[' ' for _ in range(width)] for _ in range(height)]
+def set_boundaries(layout, width, height):
+    for i in range(width):
+        layout[0][i] = layout[height - 1][i] = '#'
+    for i in range(height):
+        layout[i][0] = layout[i][width - 1] = '#'
 
-# Add vertical corridors
-for i in range(height):
-    if random.random() < 0.9 and i % 2 == 0:  # Every other row
-        for j in range(width):
-            map[i][j] = '#'
-    else:
-        if random.random() < 0.7:
-            for j in range(random.randint(0, int((width - 1)/4))):
-                map[i][j] = '#'
-        if random.random() < 0.7:
-            for j in range(random.randint(int((width - 1)/4)*3, width), width):
-                map[i][j] = '#'
+def set_player(layout, width, height):
+    player = next((i, j) for i in range(height - 1, 0, -1) for j in range(width) if layout[i][j] == ' ' and layout[i][j + 1] == ' ')
+    layout[player[0]][player[1]] = 'P'
 
-# Add horizontal connections
-for i in range(1, width, 2):  # Every other column, starting from the second
-    for _ in range(random.randint(1, 3)):  # 1 to 3 connections
-        j = random.randint(0, height - 1)
-        map[j][i] = ' '
+def set_random_elements(layout, width, height):
+    for _ in range(random.randint(5, 7)):
+        while True:
+            i, j = random.randint(0, width - 1), random.randint(0, height - 1)
+            if layout[i][j] == ' ' and layout[i - 1][j] == '#' and layout[i][j - 2] != 'P':
+                layout[i][j] = random.choice(['1', '2', '3'])
+                break
 
-# Add borders
-for i in range(width):
-    map[0][i] = map[height - 1][i] = '#'
-for i in range(height):
-    map[i][0] = map[i][width - 1] = '#'
+def print_layout(layout):
+    for row in layout:
+        print(''.join(row))
 
-# Add enemies
-for _ in range(random.randint(5, 7)):
-    while True:
-        i, j = random.randint(0, width - 1), random.randint(0, height - 1)
-        if map[j][i] == ' ' and (map[j - 1][i] == '#' or map[j + 1][i] == '#'):  # Only place enemies in empty spaces
-            map[j][i] = 'E'
-            break
+def main():
+    width, height = 17, 17
+    layout = initialize_layout(width, height)
 
-# Place the player
-player = next((i, j) for i in range(height - 1, 0, -1) for j in range(width) if map[i][j] == ' ' and map[i][j + 1] == ' ')
+    for i in range(height - 1, 0, -1):
+        if i % 2 == 0:
+            for j in range(width):
+                layout[i][j] = '#'
+            while True:
+                vertical = random.randint(1, width - 2)
+                if layout[i - 1][vertical] == ' ':
+                    layout[i][vertical] = ' '
+                    break
+        else:
+            for j in range(random.randint(0, int(width/4))):
+                if layout[i - 1][j] == ' ':
+                    break
+                layout[i][j] = '#'
+            for j in range(random.randint(int(width/(4/3)), width), width):
+                if layout[i - 1][j] == ' ':
+                    break
+                layout[i][j] = '#'
 
-map[player[0]][player[1]] = 'P'
+    set_boundaries(layout, width, height)
+    set_player(layout, width, height)
+    set_random_elements(layout, width, height)
+    print_layout(layout)
 
-# Print the map
-for row in map:
-    print(''.join(row))
+if __name__ == "__main__":
+    main()
+
