@@ -1,4 +1,5 @@
 """This module contains a simple game using pygame."""
+import random
 import pygame
 
 WHITE = (255, 255, 255)
@@ -55,6 +56,62 @@ class Player(pygame.sprite.Sprite):
     def draw(self, screen):
         """Draw the player on the screen."""
         screen.blit(self.image, self.rect)
+
+def _generate_map():
+    width, height = 17, 17
+    width_5, width_2_5, width_3_5, width_4_5 = width // 5, width * 2 // 5, width * 3 // 5, width * 4 // 5
+    width_1, height_1 = width - 1, height - 1
+    avoid_chars = {'P', '1', '2', '3'}
+
+    def _generate():
+        layout = [['#' if i % 2 == 0 or j in {0, width_1} or i in {0, height_1} else ' ' for j in range(width)] for i in range(height)]
+        for i in range(1, height_1):
+            if i % 2 == 0:
+                rand_range = random.randrange(1, width_5)
+                for _ in range(rand_range):
+                    clime = random.randrange(1, width_1)
+                    if layout[i - 1][clime] == ' ':
+                        layout[i][clime] = ' '
+            else:
+                ml, mr = sorted(random.randrange(width_2_5, width_3_5) for _ in range(2))
+                rand_range_start = random.randrange(1, width_5)
+                rand_range_end = random.randrange(width_4_5, width)
+                for j in list(range(rand_range_start)) + list(range(rand_range_end, width_1)) + list(range(ml, mr)):
+                    if layout[i - 1][j] == '#':
+                        layout[i][j] = '#'
+        return layout
+    
+    def _validate(height, width, layout):
+        visited = set()
+        start = next((i, j) for i in range(height) for j in range(width) if layout[i][j] == ' ')
+
+        stack = [start]
+        while stack:
+            i, j = stack.pop()
+            if (i, j) not in visited:
+                visited.add((i, j))
+                for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    ni, nj = i + di, j + dj
+                    if 0 <= ni < height and 0 <= nj < width and layout[ni][nj] == ' ':
+                        stack.append((ni, nj))
+
+    return all(layout[i][j] != ' ' or (i, j) in visited for i in range(height) for j in range(width))
+
+    layout = _generate()
+    while not _validate(height, width, layout):
+        layout = _generate()
+
+    player = next((i, j) for i in range(height_1, 0, -1) for j in range(width) if layout[i][j] == ' ' and layout[i][j + 1] == ' ')
+    layout[player[0]][player[1]] = 'P'
+
+    for _ in range(random.randrange(5, 8)):
+        while True:
+            i, j = random.randrange(0, width), random.randrange(0, height)
+            if layout[i][j] == ' ' and layout[i + 1][j] == '#' and layout[i][j - 1] not in avoid_chars and layout[i][j + 1] not in avoid_chars:
+                layout[i][j] = random.choice(['1', '2', '3'])
+                break
+    
+    return layout
 
 def main():
     """Main function for the game."""

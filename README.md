@@ -8,23 +8,27 @@ Python game using the Pygame libraly.
 - [ ] Combat
   - [ ] Slash
   - [ ] Pary
-- [ ] Player dies without killing
+- [ ] Weapon
+  - [ ] Sword
+  - [ ] Spear
+- [ ] Player HP decreses by one every second
+- [ ] Enemies drop HP
 - [ ] Enemies
   - [ ] Kamikaze
   - [ ] Slasher
-  - [ ] Boss
+  - [ ] Impaler
+- [ ] Boss
+  - [ ] The Queen
+  - [ ] The Scarecrow
 - [ ] Levels
-  - [ ] 1 Level
-  - [ ] 2 Level
-  - [ ] 3 Level
-  - [ ] 4 Level
-  - [ ] Boss Level
+  - [ ] Random
+  - [ ] Boss
 - [ ] Achievements
-  - [ ] Complete 1 Level
-  - [ ] Complete 2 Level
-  - [ ] Complete 3 Level
-  - [ ] Complete 4 Level
-  - [ ] Defeat the Boss
+  - [ ] Kill Kamikaze
+  - [ ] Kill Slasher
+  - [ ] Kill Impaler
+  - [ ] Defeat the Queen
+  - [ ] Defeat the Scarecrow
   - [ ] Codebreaker (Beat Developer Time)
 - [ ] UI
   - [ ] Main Menu
