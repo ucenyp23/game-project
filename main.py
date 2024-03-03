@@ -4,44 +4,54 @@ import pygame
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-PURPLE = (100, 0, 100)
+GREEN = (0, 255, 0)
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-GROUND_HEIGHT = 100
 
 class Player(pygame.sprite.Sprite):
     """This class represents the player sprite."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.player_height = 128
-        self.player_width = 64
+        self.player_height = 32
+        self.player_width = 32
         self.image = pygame.Surface((self.player_width, self.player_height))
-        self.image.fill(WHITE)
+        self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.rect.centerx = position_x
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
-        self.player_speed = 1024
+        self.player_speed = 32
         self.player_max_jump = 2
         self.gravity = 32
 
-    def update(self, delta_time):
+    def update(self, delta_time, layout):
         """Update the velocity and position of the player."""
         self.vel.y += self.gravity
         self.rect.x += self.vel.x * delta_time
         self.rect.y += self.vel.y * delta_time
-        self._collisions()
+        self._collisions(layout)
 
-    def _collisions(self):
+    def _collisions(self, layout):
         """Check for collisions with the screen boundaries."""
-        self.rect.left = max(self.rect.left, 0)
-        self.rect.right = min(self.rect.right, SCREEN_WIDTH)
-        self.rect.top = max(self.rect.top, 0)
-        if self.rect.bottom > SCREEN_HEIGHT - GROUND_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT - GROUND_HEIGHT
-            self.vel.y = 0
-            self.jump_counter = 0
+        tile_width = tile_height = 64
+        for y, row in enumerate(layout):
+            for x, tile in enumerate(row):
+                if tile == '#':
+                    tile_rect = pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height)
+                    if self.rect.top > tile_rect.bottom:
+                        self.rect.top = tile_rect.bottom
+                        self.vel.y = 0
+                    if self.rect.bottom > tile_rect.top:
+                        self.rect.bottom = tile_rect.top
+                        self.vel.y = 0
+                        self.jump_counter = 0
+                    if self.rect.left < tile_rect.right:
+                        self.rect.left = tile_rect.right
+                        self.vel.x = 0
+                    if self.rect.right < tile_rect.left:
+                        self.rect.right = tile_rect.left
+                        self.vel.x = 0
 
     def move(self, direction):
         """Move the player horizontally."""
@@ -95,7 +105,7 @@ def _generate_map():
                     if 0 <= ni < height and 0 <= nj < width and layout[ni][nj] == ' ':
                         stack.append((ni, nj))
 
-    return all(layout[i][j] != ' ' or (i, j) in visited for i in range(height) for j in range(width))
+        return all(layout[i][j] != ' ' or (i, j) in visited for i in range(height) for j in range(width))
 
     layout = _generate()
     while not _validate(height, width, layout):
@@ -123,27 +133,30 @@ def main():
 
     sprites = pygame.sprite.Group()
 
-    player = Player(SCREEN_WIDTH // 2, SCREEN_HEIGHT - GROUND_HEIGHT)
+    layout = _generate_map()
+
+    for y, row in enumerate(layout):
+        for x, tile in enumerate(row):
+            if tile == 'P':
+                player = Player(x*64, y*64)
     sprites.add(player)
 
-    ground = pygame.sprite.Sprite()
-    ground.image = pygame.Surface((SCREEN_WIDTH, GROUND_HEIGHT))
-    ground.image.fill(PURPLE)
-    ground.rect = ground.image.get_rect()
-    ground.rect.bottom = SCREEN_HEIGHT
-    sprites.add(ground)
-
-    _game_loop(sprites, screen, clock, player)
+    _game_loop(sprites, screen, clock, player, layout)
 
     pygame.quit()
 
-def _game_loop(sprites, screen, clock, player):
+def _game_loop(sprites, screen, clock, player, layout):
     """Main game loop."""
     while True:
         if _events(player) is False:
             break
-        sprites.update(clock.get_time() / 1000)
+        sprites.update(clock.get_time() / 1000, layout)
         screen.fill(BLACK)
+        tile_width = tile_height = 64
+        for y, row in enumerate(layout):
+            for x, tile in enumerate(row):
+                if tile == '#':
+                    pygame.draw.rect(screen, WHITE, pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height))
         sprites.draw(screen)
         pygame.display.update()
         clock.tick(60)
