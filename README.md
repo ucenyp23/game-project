@@ -2,9 +2,9 @@
 Python game using the Pygame libraly.
 
 ## TODO
-- [ ] Movement
-  - [ ] Left/Right
-  - [ ] Jump
+- [X] Movement
+  - [X] Left/Right
+  - [X] Jump
 - [ ] Combat
   - [ ] Slash
   - [ ] Pary
@@ -21,7 +21,7 @@ Python game using the Pygame libraly.
   - [ ] The Queen
   - [ ] The Scarecrow
 - [ ] Levels
-  - [ ] Random
+  - [X] Random
   - [ ] Boss
 - [ ] Achievements
   - [ ] Kill Kamikaze
