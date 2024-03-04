@@ -27,7 +27,6 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, delta_time, layout):
         """Update the velocity and position of the player."""
-        self.vel.y += self.gravity
         self.rect.x += self.vel.x * delta_time
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout)
@@ -39,19 +38,22 @@ class Player(pygame.sprite.Sprite):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height)
-                    if self.rect.top > tile_rect.bottom:
-                        self.rect.top = tile_rect.bottom
-                        self.vel.y = 0
-                    if self.rect.bottom > tile_rect.top:
-                        self.rect.bottom = tile_rect.top
-                        self.vel.y = 0
-                        self.jump_counter = 0
-                    if self.rect.left < tile_rect.right:
-                        self.rect.left = tile_rect.right
-                        self.vel.x = 0
-                    if self.rect.right < tile_rect.left:
-                        self.rect.right = tile_rect.left
-                        self.vel.x = 0
+                    if self.rect.colliderect(tile_rect):
+                        if self.vel.y > 0:
+                            self.rect.bottom = tile_rect.top
+                            self.vel.y = 0
+                            self.jump_counter = 0
+                        elif self.vel.y < 0:
+                            self.rect.top = tile_rect.bottom
+                            self.vel.y = 0
+                        if self.vel.x > 0:
+                            self.rect.right = tile_rect.left
+                            self.vel.x = 0
+                        elif self.vel.x < 0:
+                            self.rect.left = tile_rect.right
+                            self.vel.x = 0
+                    else:
+                        self.vel.y += self.gravity
 
     def move(self, direction):
         """Move the player horizontally."""
@@ -138,7 +140,7 @@ def main():
     for y, row in enumerate(layout):
         for x, tile in enumerate(row):
             if tile == 'P':
-                player = Player(x*64, y*64)
+                player = Player((x + 0.5)*64, (y + 1)*64)
     sprites.add(player)
 
     _game_loop(sprites, screen, clock, player, layout)
