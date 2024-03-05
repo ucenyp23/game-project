@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_counter = 0
         self.player_speed = 64
         self.player_max_jump = 2
-        self.gravity = 32
+        self.gravity = 8
 
     def update(self, delta_time, layout):
         """Update the velocity and position of the player."""
@@ -39,22 +39,19 @@ class Player(pygame.sprite.Sprite):
                 if tile == '#':
                     tile_rect = pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height)
                     if self.rect.colliderect(tile_rect):
-                        if abs(self.rect.bottom - tile_rect.top) < 4:
+                        if self.rect.bottom - tile_rect.top < 8 and self.rect.bottom - tile_rect.top > -1:
                             self.rect.bottom = tile_rect.top
                             self.vel.y = 0
                             self.jump_counter = 0
-                        elif abs(self.rect.top - tile_rect.bottom) < 4:
+                        elif self.rect.top - tile_rect.bottom > -8 and self.rect.top - tile_rect.bottom > 1:
                             self.rect.top = tile_rect.bottom
-                            self.vel.y = self.gravity
                         else:
                             self.vel.y += self.gravity
 
-                        if abs(self.rect.right - tile_rect.left) < 4:
+                        if self.rect.right - tile_rect.left < 8 and self.rect.right - tile_rect.left > -1:
                             self.rect.right = tile_rect.left
-                            self.vel.x = 0
-                        elif abs(self.rect.left - tile_rect.right) < 4:
+                        elif self.rect.left - tile_rect.right > -8 and self.rect.left - tile_rect.right > 1:
                             self.rect.left = tile_rect.right
-                            self.vel.x = 0
 
     def move(self, direction):
         """Move the player horizontally."""
