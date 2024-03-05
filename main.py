@@ -12,8 +12,8 @@ class Player(pygame.sprite.Sprite):
     """This class represents the player sprite."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.player_height = 32
-        self.player_width = 32
+        self.player_height = 256
+        self.player_width = 128
         self.image = pygame.Surface((self.player_width, self.player_height))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
@@ -28,13 +28,13 @@ class Player(pygame.sprite.Sprite):
     def update(self, delta_time, layout):
         """Update the velocity and position of the player."""
         self.rect.x += self.vel.x * delta_time
-        self._collisions(layout, 'x')
+        self._collisions(layout, 'x', False)
         self.rect.y += self.vel.y * delta_time
-        self._collisions(layout, 'y')
+        self._collisions(layout, 'y', True)
 
-    def _collisions(self, layout, direction):
+    def _collisions(self, layout, direction, gravity_allow):
         """Check for collisions with the screen boundaries."""
-        tile_width = tile_height = 64
+        tile_width = tile_height = 512
         collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
@@ -43,21 +43,21 @@ class Player(pygame.sprite.Sprite):
                     if self.rect.colliderect(tile_rect):
                         collision = True
                         if direction == 'x':
-                            if self.rect.right - tile_rect.left < 32 and self.rect.right - tile_rect.left >= 0:
+                            if self.rect.right - tile_rect.left < 32 and self.rect.right - tile_rect.left > 0:
                                 self.rect.right = tile_rect.left
                                 self.vel.x = 0
-                            elif self.rect.left - tile_rect.right > -32 and self.rect.left - tile_rect.right <= 0:
+                            elif self.rect.left - tile_rect.right > -32 and self.rect.left - tile_rect.right < 0:
                                 self.rect.left = tile_rect.right
                                 self.vel.x = 0
                         elif direction == 'y':
-                            if self.rect.bottom - tile_rect.top < 32 and self.rect.bottom - tile_rect.top >= 0:
+                            if self.rect.bottom - tile_rect.top < 32 and self.rect.bottom - tile_rect.top > 0:
                                 self.rect.bottom = tile_rect.top
                                 self.vel.y = 0
                                 self.jump_counter = 0
-                            elif self.rect.top - tile_rect.bottom > -32 and self.rect.top - tile_rect.bottom <= 0:
+                            elif self.rect.top - tile_rect.bottom > -32 and self.rect.top - tile_rect.bottom < 0:
                                 self.rect.top = tile_rect.bottom
                                 self.vel.y = self.gravity
-        if collision is False:
+        if collision is False and gravity_allow is True:
             self.vel.y += self.gravity
 
     def move(self, direction):
@@ -145,10 +145,7 @@ def main():
 
     layout = _generate_map()
 
-    for y, row in enumerate(layout):
-        for x, tile in enumerate(row):
-            if tile == 'P':
-                player = Player((x + 0.5)*64, (y + 1)*64)
+    player = Player(SCREEN_HEIGHT // 2 - 256, 768)
     sprites.add(player)
 
     _game_loop(sprites, screen, clock, player, layout)
@@ -162,7 +159,7 @@ def _game_loop(sprites, screen, clock, player, layout):
             break
         sprites.update(clock.get_time() / 1000, layout)
         screen.fill(BLACK)
-        tile_width = tile_height = 64
+        tile_width = tile_height = 512
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
