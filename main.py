@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
-        self.player_speed = 32
+        self.player_speed = 64
         self.player_max_jump = 2
         self.gravity = 32
 
@@ -39,21 +39,22 @@ class Player(pygame.sprite.Sprite):
                 if tile == '#':
                     tile_rect = pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height)
                     if self.rect.colliderect(tile_rect):
-                        if self.vel.y > 0:
+                        if abs(self.rect.bottom - tile_rect.top) < 4:
                             self.rect.bottom = tile_rect.top
                             self.vel.y = 0
                             self.jump_counter = 0
-                        elif self.vel.y < 0:
+                        elif abs(self.rect.top - tile_rect.bottom) < 4:
                             self.rect.top = tile_rect.bottom
-                            self.vel.y = 0
-                        if self.vel.x > 0:
+                            self.vel.y = self.gravity
+                        else:
+                            self.vel.y += self.gravity
+
+                        if abs(self.rect.right - tile_rect.left) < 4:
                             self.rect.right = tile_rect.left
                             self.vel.x = 0
-                        elif self.vel.x < 0:
+                        elif abs(self.rect.left - tile_rect.right) < 4:
                             self.rect.left = tile_rect.right
                             self.vel.x = 0
-                    else:
-                        self.vel.y += self.gravity
 
     def move(self, direction):
         """Move the player horizontally."""
@@ -71,7 +72,10 @@ class Player(pygame.sprite.Sprite):
 
 def _generate_map():
     width, height = 17, 17
-    width_5, width_2_5, width_3_5, width_4_5 = width // 5, width * 2 // 5, width * 3 // 5, width * 4 // 5
+    width_5 = width // 5
+    width_2_5 = width * 2 // 5
+    width_3_5 = width * 3 // 5
+    width_4_5 = width * 4 // 5
     width_1, height_1 = width - 1, height - 1
     avoid_chars = {'P', '1', '2', '3'}
 
@@ -92,7 +96,7 @@ def _generate_map():
                     if layout[i - 1][j] == '#':
                         layout[i][j] = '#'
         return layout
-    
+
     def _validate(height, width, layout):
         visited = set()
         start = next((i, j) for i in range(height) for j in range(width) if layout[i][j] == ' ')
@@ -122,7 +126,7 @@ def _generate_map():
             if layout[i][j] == ' ' and layout[i + 1][j] == '#' and layout[i][j - 1] not in avoid_chars and layout[i][j + 1] not in avoid_chars:
                 layout[i][j] = random.choice(['1', '2', '3'])
                 break
-    
+
     return layout
 
 def main():
@@ -158,7 +162,8 @@ def _game_loop(sprites, screen, clock, player, layout):
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
-                    pygame.draw.rect(screen, WHITE, pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height))
+                    tile = pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height)
+                    pygame.draw.rect(screen, WHITE, tile)
         sprites.draw(screen)
         pygame.display.update()
         clock.tick(60)
