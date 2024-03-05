@@ -21,37 +21,44 @@ class Player(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
-        self.player_speed = 64
+        self.player_speed = 128
         self.player_max_jump = 2
-        self.gravity = 8
+        self.gravity = 2
 
     def update(self, delta_time, layout):
         """Update the velocity and position of the player."""
         self.rect.x += self.vel.x * delta_time
+        self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
-        self._collisions(layout)
+        self._collisions(layout, 'y')
 
-    def _collisions(self, layout):
+    def _collisions(self, layout, direction):
         """Check for collisions with the screen boundaries."""
         tile_width = tile_height = 64
+        collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x*tile_width, y*tile_height, tile_width, tile_height)
                     if self.rect.colliderect(tile_rect):
-                        if self.rect.bottom - tile_rect.top < 8 and self.rect.bottom - tile_rect.top > -1:
-                            self.rect.bottom = tile_rect.top
-                            self.vel.y = 0
-                            self.jump_counter = 0
-                        elif self.rect.top - tile_rect.bottom > -8 and self.rect.top - tile_rect.bottom > 1:
-                            self.rect.top = tile_rect.bottom
-                        else:
-                            self.vel.y += self.gravity
-
-                        if self.rect.right - tile_rect.left < 8 and self.rect.right - tile_rect.left > -1:
-                            self.rect.right = tile_rect.left
-                        elif self.rect.left - tile_rect.right > -8 and self.rect.left - tile_rect.right > 1:
-                            self.rect.left = tile_rect.right
+                        collision = True
+                        if direction == 'x':
+                            if self.rect.right - tile_rect.left < 32 and self.rect.right - tile_rect.left >= 0:
+                                self.rect.right = tile_rect.left
+                                self.vel.x = 0
+                            elif self.rect.left - tile_rect.right > -32 and self.rect.left - tile_rect.right <= 0:
+                                self.rect.left = tile_rect.right
+                                self.vel.x = 0
+                        elif direction == 'y':
+                            if self.rect.bottom - tile_rect.top < 32 and self.rect.bottom - tile_rect.top >= 0:
+                                self.rect.bottom = tile_rect.top
+                                self.vel.y = 0
+                                self.jump_counter = 0
+                            elif self.rect.top - tile_rect.bottom > -32 and self.rect.top - tile_rect.bottom <= 0:
+                                self.rect.top = tile_rect.bottom
+                                self.vel.y = self.gravity
+        if collision is False:
+            self.vel.y += self.gravity
 
     def move(self, direction):
         """Move the player horizontally."""
