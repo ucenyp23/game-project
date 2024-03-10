@@ -2,9 +2,7 @@
 Python game using the Pygame libraly.
 
 ## TODO
-- [X] Movement
-  - [X] Left/Right
-  - [X] Jump
+- [X] Player
 - [ ] Combat
   - [ ] Slash
   - [ ] Pary
@@ -15,20 +13,15 @@ Python game using the Pygame libraly.
 - [ ] Enemies drop HP
 - [ ] Enemies
   - [ ] Kamikaze
+  - [ ] Runner
   - [ ] Slasher
-  - [ ] Impaler
-- [ ] Boss
-  - [ ] The Queen
+  - [ ] Lancers
   - [ ] The Scarecrow
 - [ ] Levels
   - [X] Random
   - [ ] Boss
 - [ ] Achievements
-  - [ ] Kill Kamikaze
-  - [ ] Kill Slasher
-  - [ ] Kill Impaler
-  - [ ] Defeat the Queen
-  - [ ] Defeat the Scarecrow
+  - [ ] Defeat Scarecrow
   - [ ] Codebreaker (Beat Developer Time)
 - [ ] UI
   - [ ] Main Menu
