@@ -136,8 +136,8 @@ class Runner(pygame.sprite.Sprite):
     """This class represents the player sprite."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 32
-        self.width = 32
+        self.height = 232
+        self.width = 96
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
@@ -188,8 +188,8 @@ class Slasher(pygame.sprite.Sprite):
     """This class represents the player sprite."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 32
-        self.width = 32
+        self.height = 96
+        self.width = 48
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
@@ -240,8 +240,8 @@ class Lancer(pygame.sprite.Sprite):
     """This class represents the player sprite."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 32
-        self.width = 32
+        self.height = 96
+        self.width = 48
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
@@ -439,14 +439,23 @@ def game_loop(screen):
     clock = pygame.time.Clock()
     sprites = pygame.sprite.Group()
     layout = generate_map()
-    player = Player((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
-    kamikaze = Kamikaze((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
     for y, row in enumerate(layout):
         for x, tile in enumerate(row):
             if tile == 'P':
+                player = Player((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
                 sprites.add(player)
             if tile == '1':
+                kamikaze = Kamikaze((x*TILE_SIZE) + TILE_SIZE // 2, y*TILE_SIZE)
                 sprites.add(kamikaze)
+            if tile == '2':
+                runner = Runner((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
+                sprites.add(runner)
+            if tile == '3':
+                slasher = Slasher((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
+                sprites.add(slasher)
+            if tile == '4':
+                lancer = Lancer((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
+                sprites.add(lancer)
 
     while handle_events(player):
         sprites.update(clock.get_time() / 1000, layout)
@@ -461,9 +470,17 @@ def game_loop(screen):
                         pygame.draw.rect(screen, WHITE, tile)
         player.rect.centerx -= camera_x
         player.rect.centery -= camera_y
+        for sprite in sprites:
+            if sprite != player:
+                sprite.rect.centerx -= camera_x
+                sprite.rect.centery -= camera_y
         sprites.draw(screen)
         player.rect.centerx += camera_x
         player.rect.centery += camera_y
+        for sprite in sprites:
+            if sprite != player:
+                sprite.rect.centerx += camera_x
+                sprite.rect.centery += camera_y
     
         pygame.display.update()
         clock.tick(60)
