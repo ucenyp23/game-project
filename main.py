@@ -1,5 +1,5 @@
 """This module contains a simple game using pygame."""
-"""Make this code more funcional and pythonic, clean up it up and make it conform to PEP8."""
+#Make this code more funcional and pythonic, clean up it up and make it conform to PEP8.
 import random
 import pygame
 
@@ -13,7 +13,7 @@ TILE_SIZE = 256
 MAP_SIZE = 17
 
 class Player(pygame.sprite.Sprite):
-    """This class represents the player sprite."""
+    """Player sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
         self.height = 128
@@ -28,16 +28,16 @@ class Player(pygame.sprite.Sprite):
         self.speed = 1024
         self.max_jump = 2
         self.gravity = 16
+        self.hp = 1024
 
     def update(self, delta_time, layout):
-        """Update the velocity and position of the player."""
+        """Player update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
 
     def _collisions(self, layout, direction):
-        """Check for collisions with the screen boundaries."""
         collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
@@ -67,21 +67,21 @@ class Player(pygame.sprite.Sprite):
                 self.vel.y = self.gravity
 
     def move(self, direction):
-        """Move the player horizontally."""
+        """Player move function."""
         self.vel.x = direction * self.speed
 
     def jump(self):
-        """Make the player jump."""
+        """Player jump function."""
         if self.jump_counter < self.max_jump:
             self.vel.y = -self.speed
             self.jump_counter += 1
 
     def draw(self, screen):
-        """Draw the player on the screen."""
+        """Player draw function."""
         screen.blit(self.image, self.rect)
 
 class Kamikaze(pygame.sprite.Sprite):
-    """This class represents the player sprite."""
+    """Kamikaze sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
         self.height = 32
@@ -93,23 +93,21 @@ class Kamikaze(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.speed = 8192
+        self.hp = 64
 
     def update(self, delta_time, layout):
-        """Update the velocity and position of the player."""
+        """Kamikaze update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
 
     def _collisions(self, layout, direction):
-        """Check for collisions with the screen boundaries."""
-        collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if self.rect.colliderect(tile_rect):
-                        collision = True
                         self._handle_collision(tile_rect, direction)
 
     def _handle_collision(self, tile_rect, direction):
@@ -129,11 +127,11 @@ class Kamikaze(pygame.sprite.Sprite):
                 self.vel.y = 0
 
     def draw(self, screen):
-        """Draw the player on the screen."""
+        """Kamikaze draw function."""
         screen.blit(self.image, self.rect)
 
 class Runner(pygame.sprite.Sprite):
-    """This class represents the player sprite."""
+    """Runner sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
         self.height = 232
@@ -145,23 +143,21 @@ class Runner(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.speed = 8192
+        self.hp = 256
 
     def update(self, delta_time, layout):
-        """Update the velocity and position of the player."""
+        """Runner update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
 
     def _collisions(self, layout, direction):
-        """Check for collisions with the screen boundaries."""
-        collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if self.rect.colliderect(tile_rect):
-                        collision = True
                         self._handle_collision(tile_rect, direction)
 
     def _handle_collision(self, tile_rect, direction):
@@ -181,11 +177,11 @@ class Runner(pygame.sprite.Sprite):
                 self.vel.y = 0
 
     def draw(self, screen):
-        """Draw the player on the screen."""
+        """Runner draw function."""
         screen.blit(self.image, self.rect)
 
 class Slasher(pygame.sprite.Sprite):
-    """This class represents the player sprite."""
+    """Slasher sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
         self.height = 96
@@ -197,23 +193,21 @@ class Slasher(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.speed = 8192
+        self.hp = 128
 
     def update(self, delta_time, layout):
-        """Update the velocity and position of the player."""
+        """Slasher update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
 
     def _collisions(self, layout, direction):
-        """Check for collisions with the screen boundaries."""
-        collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if self.rect.colliderect(tile_rect):
-                        collision = True
                         self._handle_collision(tile_rect, direction)
 
     def _handle_collision(self, tile_rect, direction):
@@ -233,11 +227,11 @@ class Slasher(pygame.sprite.Sprite):
                 self.vel.y = 0
 
     def draw(self, screen):
-        """Draw the player on the screen."""
+        """Slasher draw function."""
         screen.blit(self.image, self.rect)
 
 class Lancer(pygame.sprite.Sprite):
-    """This class represents the player sprite."""
+    """Lancer sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
         self.height = 96
@@ -249,23 +243,21 @@ class Lancer(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.speed = 8192
+        self.hp = 128
 
     def update(self, delta_time, layout):
-        """Update the velocity and position of the player."""
+        """Lancer update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
 
     def _collisions(self, layout, direction):
-        """Check for collisions with the screen boundaries."""
-        collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if self.rect.colliderect(tile_rect):
-                        collision = True
                         self._handle_collision(tile_rect, direction)
 
     def _handle_collision(self, tile_rect, direction):
@@ -285,11 +277,11 @@ class Lancer(pygame.sprite.Sprite):
                 self.vel.y = 0
 
     def draw(self, screen):
-        """Draw the player on the screen."""
+        """Lancer draw function."""
         screen.blit(self.image, self.rect)
 
-class TheScarecrow(pygame.sprite.Sprite):
-    """This class represents the player sprite."""
+class Scarecrow(pygame.sprite.Sprite):
+    """Scarecrow sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
         self.height = 32
@@ -301,23 +293,21 @@ class TheScarecrow(pygame.sprite.Sprite):
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
         self.speed = 8192
+        self.hp = 2048
 
     def update(self, delta_time, layout):
-        """Update the velocity and position of the player."""
+        """Scarecrow update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
 
     def _collisions(self, layout, direction):
-        """Check for collisions with the screen boundaries."""
-        collision = False
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if self.rect.colliderect(tile_rect):
-                        collision = True
                         self._handle_collision(tile_rect, direction)
 
     def _handle_collision(self, tile_rect, direction):
@@ -337,16 +327,18 @@ class TheScarecrow(pygame.sprite.Sprite):
                 self.vel.y = 0
 
     def draw(self, screen):
-        """Draw the player on the screen."""
+        """Scarecrow draw function."""
         screen.blit(self.image, self.rect)
 
 def generate_map():
+    """Map generation function"""
     size_5 = MAP_SIZE // 5
     size_1 = MAP_SIZE - 1
-    avoid_chars = {'P', '1', '2', '3' '4'}
+    avoid_chars = ['P', '1', '2', '3', '4']
 
     def generate():
-        layout = [['#' if i % 2 == 0 or j in {0, size_1} or i in {0, size_1} else ' ' for j in range(MAP_SIZE)] for i in range(MAP_SIZE)]
+        layout = [['#' if i % 2 == 0 or j in {0, size_1} or i in {0, size_1} else ' '
+                   for j in range(MAP_SIZE)] for i in range(MAP_SIZE)]
         for i in range(1, size_1):
             if i % 2 == 0:
                 rand_range = random.randrange(1, size_5)
@@ -358,14 +350,17 @@ def generate_map():
                 ml, mr = sorted(random.randrange(size_5 * 2, size_5 * 3) for _ in range(2))
                 rand_range_start = random.randrange(1, size_5)
                 rand_range_end = random.randrange(size_5 * 4, MAP_SIZE)
-                for j in list(range(rand_range_start)) + list(range(rand_range_end, size_1)) + list(range(ml, mr)):
+                for j in list(range(rand_range_start)) + \
+                        list(range(rand_range_end, size_1)) + \
+                        list(range(ml, mr)):
                     if layout[i - 1][j] == '#':
                         layout[i][j] = '#'
         return layout
 
     def validate(layout):
         visited = set()
-        start = next((i, j) for i in range(MAP_SIZE) for j in range(MAP_SIZE) if layout[i][j] == ' ')
+        start = next((i, j) for i in range(MAP_SIZE)
+                    for j in range(MAP_SIZE) if layout[i][j] == ' ')
 
         stack = [start]
         while stack:
@@ -377,34 +372,40 @@ def generate_map():
                     if 0 <= ni < MAP_SIZE and 0 <= nj < MAP_SIZE and layout[ni][nj] == ' ':
                         stack.append((ni, nj))
 
-        return all(layout[i][j] != ' ' or (i, j) in visited for i in range(MAP_SIZE) for j in range(MAP_SIZE))
+        return all(layout[i][j] != ' ' or (i, j) in visited
+                    for i in range(MAP_SIZE) for j in range(MAP_SIZE))
 
     layout = generate()
     while not validate(layout):
         layout = generate()
 
-    player = next((i, j) for i in range(size_1, 0, -1) for j in range(MAP_SIZE) if layout[i][j] == ' ' and layout[i][j + 1] == ' ')
+    player = next((i, j) for i in range(size_1, 0, -1)
+                    for j in range(MAP_SIZE) if layout[i][j] == ' ' and layout[i][j + 1] == ' ')
     layout[player[0]][player[1]] = 'P'
 
     for _ in range(random.randrange(5, 8)):
         while True:
             i, j = random.randrange(0, MAP_SIZE), random.randrange(0, MAP_SIZE)
-            if layout[i][j] == ' ' and layout[i + 1][j] == '#' and layout[i][j - 1] not in avoid_chars and layout[i][j + 1] not in avoid_chars:
+            if (layout[i][j] == ' ' and layout[i + 1][j] == '#' and
+                layout[i][j - 1] not in avoid_chars and
+                layout[i][j + 1] not in avoid_chars):
                 layout[i][j] = random.choice(['1', '2', '3', '4'])
                 break
 
     return layout
 
 def handle_events(player):
-    """Handle events."""
+    """Events handling function."""
     keys = pygame.key.get_pressed()
-    player.move(-1 if keys[pygame.K_a] and not keys[pygame.K_d] else 1 if keys[pygame.K_d] and not keys[pygame.K_a] else 0)
+    player.move(-1 if keys[pygame.K_a] and not keys[pygame.K_d] else
+                 1 if keys[pygame.K_d] and not keys[pygame.K_a] else 0)
 
     if keys[pygame.K_ESCAPE]:
         return False
 
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE):
+        if (event.type == pygame.QUIT or
+            (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE)):
             return False
         if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
             player.jump()
@@ -416,8 +417,10 @@ def main_menu(screen):
     menu_font = pygame.font.Font(None, 128)
     play_text = menu_font.render('Play', True, WHITE)
     quit_text = menu_font.render('Quit', True, WHITE)
-    play_rect = pygame.Rect(SCREEN_WIDTH // 2 - play_text.get_width() // 2, SCREEN_HEIGHT // 2 - play_text.get_height(), play_text.get_width(), play_text.get_height())
-    quit_rect = pygame.Rect(SCREEN_WIDTH // 2 - quit_text.get_width() // 2, SCREEN_HEIGHT // 2 + quit_text.get_height(), quit_text.get_width(), quit_text.get_height())
+    play_rect = pygame.Rect(SCREEN_WIDTH // 2 - play_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 - play_text.get_height(), play_text.get_width(), play_text.get_height())
+    quit_rect = pygame.Rect(SCREEN_WIDTH // 2 - quit_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 + quit_text.get_height(), quit_text.get_width(), quit_text.get_height())
 
     while True:
         for event in pygame.event.get():
@@ -426,7 +429,7 @@ def main_menu(screen):
             if event.type == pygame.MOUSEBUTTONUP:
                 if play_rect.collidepoint(pygame.mouse.get_pos()):
                     return True
-                elif quit_rect.collidepoint(pygame.mouse.get_pos()):
+                if quit_rect.collidepoint(pygame.mouse.get_pos()):
                     return False
 
         screen.fill(BLACK)
@@ -434,65 +437,81 @@ def main_menu(screen):
         screen.blit(quit_text, quit_rect.topleft)
         pygame.display.update()
 
-def game_loop(screen):
-    """Main game loop."""
+def level(screen):
+    """Level function."""
     clock = pygame.time.Clock()
     sprites = pygame.sprite.Group()
     layout = generate_map()
-    for y, row in enumerate(layout):
-        for x, tile in enumerate(row):
-            if tile == 'P':
-                player = Player((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
-                sprites.add(player)
-            if tile == '1':
-                kamikaze = Kamikaze((x*TILE_SIZE) + TILE_SIZE // 2, y*TILE_SIZE)
-                sprites.add(kamikaze)
-            if tile == '2':
-                runner = Runner((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
-                sprites.add(runner)
-            if tile == '3':
-                slasher = Slasher((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
-                sprites.add(slasher)
-            if tile == '4':
-                lancer = Lancer((x*TILE_SIZE) + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
-                sprites.add(lancer)
-
+    tile_to_class = {'P': Player, '1': Kamikaze, '2': Runner, '3': Slasher, '4': Lancer}
+    player = create_entities(layout, sprites, tile_to_class)
     while handle_events(player):
         sprites.update(clock.get_time() / 1000, layout)
-        screen.fill(BLACK)
-        camera_x = min(max(player.rect.centerx - screen.get_width() // 2, 0), len(layout[0])*TILE_SIZE - screen.get_width())
-        camera_y = min(max(player.rect.centery - screen.get_height() // 2, 0), len(layout)*TILE_SIZE - screen.get_height())
-        for y, row in enumerate(layout):
-            if y*TILE_SIZE - camera_y >= 0 or y*TILE_SIZE - camera_y <= SCREEN_WIDTH:
-                for x, tile in enumerate(row):
-                    if tile == '#' and (x*TILE_SIZE - camera_x >= 0 or x*TILE_SIZE - camera_x <= SCREEN_HEIGHT):
-                        tile = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE - camera_y), TILE_SIZE, TILE_SIZE)
-                        pygame.draw.rect(screen, WHITE, tile)
-        player.rect.centerx -= camera_x
-        player.rect.centery -= camera_y
-        for sprite in sprites:
-            if sprite != player:
-                sprite.rect.centerx -= camera_x
-                sprite.rect.centery -= camera_y
+        camera_x, camera_y = update_camera(player, layout, screen)
+        draw_tiles(layout, screen, camera_x, camera_y)
+        update_positions(sprites, camera_x, camera_y, player)
         sprites.draw(screen)
-        player.rect.centerx += camera_x
-        player.rect.centery += camera_y
-        for sprite in sprites:
-            if sprite != player:
-                sprite.rect.centerx += camera_x
-                sprite.rect.centery += camera_y
-    
+        reset_positions(sprites, camera_x, camera_y, player)
         pygame.display.update()
         clock.tick(60)
 
+def create_entities(layout, sprites, tile_to_class):
+    """Entity creation function."""
+    for y, row in enumerate(layout):
+        for x, tile in enumerate(row):
+            if tile in tile_to_class:
+                entity = tile_to_class[tile](x*TILE_SIZE + TILE_SIZE // 2,
+                                              y*TILE_SIZE if tile == '1' else (y + 1)*TILE_SIZE)
+                sprites.add(entity)
+                if tile == 'P':
+                    player = entity
+    return player
+
+def update_camera(player, layout, screen):
+    """Camera update function."""
+    camera_x = min(max(player.rect.centerx - screen.get_width() // 2, 0),
+                    len(layout[0])*TILE_SIZE - screen.get_width())
+    camera_y = min(max(player.rect.centery - screen.get_height() // 2, 0),
+                    len(layout)*TILE_SIZE - screen.get_height())
+    return camera_x, camera_y
+
+def draw_tiles(layout, screen, camera_x, camera_y):
+    """Tile draw function."""
+    screen.fill(BLACK)
+    for y, row in enumerate(layout):
+        if y*TILE_SIZE - camera_y >= 0 or y*TILE_SIZE - camera_y <= SCREEN_WIDTH:
+            for x, tile in enumerate(row):
+                if (tile == '#' and (x*TILE_SIZE - camera_x >= 0 or
+                    x*TILE_SIZE - camera_x <= SCREEN_HEIGHT)):
+                    tile = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE - camera_y),
+                                        TILE_SIZE, TILE_SIZE)
+                    pygame.draw.rect(screen, WHITE, tile)
+
+def update_positions(sprites, camera_x, camera_y, player):
+    """Update position function."""
+    player.rect.centerx -= camera_x
+    player.rect.centery -= camera_y
+    for sprite in sprites:
+        if sprite != player:
+            sprite.rect.centerx -= camera_x
+            sprite.rect.centery -= camera_y
+
+def reset_positions(sprites, camera_x, camera_y, player):
+    """Reset position function."""
+    player.rect.centerx += camera_x
+    player.rect.centery += camera_y
+    for sprite in sprites:
+        if sprite != player:
+            sprite.rect.centerx += camera_x
+            sprite.rect.centery += camera_y
+
 def main():
-    """Main function for the game."""
+    """Main function."""
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Game')
 
     while main_menu(screen):
-        game_loop(screen)
+        level(screen)
 
     pygame.quit()
 
