@@ -17,9 +17,8 @@ Python game using the Pygame libraly.
   - [ ] Slasher
   - [ ] Lancers
   - [ ] The Scarecrow
-- [ ] Levels
-  - [X] Random
-  - [ ] Boss
+- [X] Level Generation
+- [ ] Boss Level
 - [ ] Achievements
   - [ ] Defeat Scarecrow
   - [ ] Codebreaker (Beat Developer Time)

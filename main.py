@@ -288,6 +288,58 @@ class Lancer(pygame.sprite.Sprite):
         """Draw the player on the screen."""
         screen.blit(self.image, self.rect)
 
+class TheScarecrow(pygame.sprite.Sprite):
+    """This class represents the player sprite."""
+    def __init__(self, position_x, position_y):
+        super().__init__()
+        self.height = 32
+        self.width = 32
+        self.image = pygame.Surface((self.width, self.height))
+        self.image.fill(RED)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = position_x
+        self.rect.bottom = position_y
+        self.vel = pygame.Vector2(0, 0)
+        self.speed = 8192
+
+    def update(self, delta_time, layout):
+        """Update the velocity and position of the player."""
+        self.rect.x += self.vel.x * delta_time
+        self._collisions(layout, 'x')
+        self.rect.y += self.vel.y * delta_time
+        self._collisions(layout, 'y')
+
+    def _collisions(self, layout, direction):
+        """Check for collisions with the screen boundaries."""
+        collision = False
+        for y, row in enumerate(layout):
+            for x, tile in enumerate(row):
+                if tile == '#':
+                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    if self.rect.colliderect(tile_rect):
+                        collision = True
+                        self._handle_collision(tile_rect, direction)
+
+    def _handle_collision(self, tile_rect, direction):
+        if direction == 'x':
+            if self.rect.right - tile_rect.left < TILE_SIZE // 2:
+                self.rect.right = tile_rect.left
+                self.vel.x = 0
+            elif self.rect.left - tile_rect.right > -TILE_SIZE // 2:
+                self.rect.left = tile_rect.right
+                self.vel.x = 0
+        elif direction == 'y':
+            if self.rect.bottom - tile_rect.top < TILE_SIZE // 2:
+                self.rect.bottom = tile_rect.top
+                self.vel.y = 0
+            elif self.rect.top - tile_rect.bottom > -TILE_SIZE // 2:
+                self.rect.top = tile_rect.bottom
+                self.vel.y = 0
+
+    def draw(self, screen):
+        """Draw the player on the screen."""
+        screen.blit(self.image, self.rect)
+
 def generate_map():
     size_5 = MAP_SIZE // 5
     size_1 = MAP_SIZE - 1
