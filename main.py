@@ -130,62 +130,12 @@ class Kamikaze(pygame.sprite.Sprite):
         """Kamikaze draw function."""
         screen.blit(self.image, self.rect)
 
-class Runner(pygame.sprite.Sprite):
-    """Runner sprite class."""
-    def __init__(self, position_x, position_y):
-        super().__init__()
-        self.height = 232
-        self.width = 96
-        self.image = pygame.Surface((self.width, self.height))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.rect.centerx = position_x
-        self.rect.bottom = position_y
-        self.vel = pygame.Vector2(0, 0)
-        self.speed = 8192
-        self.hp = 256
-
-    def update(self, delta_time, layout):
-        """Runner update function."""
-        self.rect.x += self.vel.x * delta_time
-        self._collisions(layout, 'x')
-        self.rect.y += self.vel.y * delta_time
-        self._collisions(layout, 'y')
-
-    def _collisions(self, layout, direction):
-        for y, row in enumerate(layout):
-            for x, tile in enumerate(row):
-                if tile == '#':
-                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    if self.rect.colliderect(tile_rect):
-                        self._handle_collision(tile_rect, direction)
-
-    def _handle_collision(self, tile_rect, direction):
-        if direction == 'x':
-            if self.rect.right - tile_rect.left < TILE_SIZE // 2:
-                self.rect.right = tile_rect.left
-                self.vel.x = 0
-            elif self.rect.left - tile_rect.right > -TILE_SIZE // 2:
-                self.rect.left = tile_rect.right
-                self.vel.x = 0
-        elif direction == 'y':
-            if self.rect.bottom - tile_rect.top < TILE_SIZE // 2:
-                self.rect.bottom = tile_rect.top
-                self.vel.y = 0
-            elif self.rect.top - tile_rect.bottom > -TILE_SIZE // 2:
-                self.rect.top = tile_rect.bottom
-                self.vel.y = 0
-
-    def draw(self, screen):
-        """Runner draw function."""
-        screen.blit(self.image, self.rect)
-
 class Slasher(pygame.sprite.Sprite):
     """Slasher sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 96
-        self.width = 48
+        self.height = 128
+        self.width = 64
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
@@ -334,7 +284,7 @@ def generate_map():
     """Map generation function"""
     size_5 = MAP_SIZE // 5
     size_1 = MAP_SIZE - 1
-    avoid_chars = ['P', '1', '2', '3', '4']
+    avoid_chars = ['P', '1', '2', '3']
 
     def generate():
         layout = [['#' if i % 2 == 0 or j in {0, size_1} or i in {0, size_1} else ' '
@@ -389,7 +339,7 @@ def generate_map():
             if (layout[i][j] == ' ' and layout[i + 1][j] == '#' and
                 layout[i][j - 1] not in avoid_chars and
                 layout[i][j + 1] not in avoid_chars):
-                layout[i][j] = random.choice(['1', '2', '3', '4'])
+                layout[i][j] = random.choice(['1', '2', '3'])
                 break
 
     return layout
@@ -442,7 +392,7 @@ def level(screen):
     clock = pygame.time.Clock()
     sprites = pygame.sprite.Group()
     layout = generate_map()
-    tile_to_class = {'P': Player, '1': Kamikaze, '2': Runner, '3': Slasher, '4': Lancer}
+    tile_to_class = {'P': Player, '1': Kamikaze, '2': Slasher, '3': Lancer}
     player = create_entities(layout, sprites, tile_to_class)
     while handle_events(player):
         sprites.update(clock.get_time() / 1000, layout)
