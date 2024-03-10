@@ -19,7 +19,7 @@ Python game using the Pygame libraly.
   - [ ] Defeat Scarecrow
   - [ ] Codebreaker (Beat Developer Time)
 - [ ] UI
-  - [ ] Main Menu
+  - [X] Main Menu
   - [ ] Scoreboard
 - [ ] Creadits
 
