@@ -1,7 +1,8 @@
 """This module contains a simple game using pygame."""
-#Make this code more funcional and pythonic, clean up it up and make it conform to PEP8.
+# Make this code more funcional and pythonic, clean up it up and make it conform to PEP8.
 import random
 import pygame
+import heapq
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -12,13 +13,48 @@ SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
 
+class AStarPathFinder:
+    def __init__(self):
+        self.directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+
+    def heuristic(self, a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    def find_path(self, start, goal, layout):
+        start, goal = tuple(start), tuple(goal)
+        frontier = []
+        heapq.heappush(frontier, (0, start))
+        came_from = {start: None}
+        cost_so_far = {start: 0}
+
+        while frontier:
+            _, current = heapq.heappop(frontier)
+
+            if current == goal:
+                path = []
+                while current is not None:
+                    path.append(current)
+                    current = came_from[current]
+                path.reverse()
+                return path
+
+            for dx, dy in self.directions:
+                next = current[0] + dx, current[1] + dy
+                if 0 <= next[0] < len(layout[0]) and 0 <= next[1] < len(layout) and layout[next[1]][next[0]] != '#':
+                    new_cost = cost_so_far[current] + 1
+                    if next not in cost_so_far or new_cost < cost_so_far[next]:
+                        cost_so_far[next] = new_cost
+                        priority = new_cost + self.heuristic(goal, next)
+                        heapq.heappush(frontier, (priority, next))
+                        came_from[next] = current
+
+        return None
+
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 128
-        self.width = 64
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((64, 128))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.rect.centerx = position_x
@@ -30,7 +66,7 @@ class Player(pygame.sprite.Sprite):
         self.gravity = 16
         self.hp = 1024
 
-    def update(self, delta_time, layout):
+    def update(self, delta_time, layout, player):
         """Player update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
@@ -84,19 +120,44 @@ class Kamikaze(pygame.sprite.Sprite):
     """Kamikaze sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 32
-        self.width = 32
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((32, 32))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.rect.centerx = position_x
         self.rect.bottom = position_y
         self.vel = pygame.Vector2(0, 0)
-        self.speed = 8192
+        self.speed = 2048
         self.hp = 64
+        self.enable = False
 
-    def update(self, delta_time, layout):
+    def move(self, player, layout):
+        """Move towards the player."""
+        start = (self.rect.x, self.rect.y)
+        goal = (player.rect.x, player.rect.y)
+        path = AStarPathFinder().find_path(start, goal, layout)
+
+        if path:
+            next_step = path[0]
+            direction = pygame.Vector2(next_step[0] - self.rect.x, next_step[1] - self.rect.y)
+            self.vel = direction.normalize() * self.speed
+
+    def enabling(self, player):
+        """Enable movement."""
+        direction = pygame.Vector2(player.rect.x - self.rect.x, (player.rect.y + player.rect.height // 2) - self.rect.y)
+        within_screen = -TILE_SIZE*3 <= direction.x <= TILE_SIZE*3 and -TILE_SIZE*0.9 <= direction.y <= TILE_SIZE*0.9
+
+        if within_screen:
+            self.enable = True
+
+    def update(self, delta_time, layout, player):
         """Kamikaze update function."""
+        if player.rect.colliderect(self.rect):
+            player.hp -= self.hp
+            self.hp = 0
+        if self.enable == False:
+            self.enabling(player)
+        else:
+            self.move(player, layout)
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
@@ -134,9 +195,7 @@ class Slasher(pygame.sprite.Sprite):
     """Slasher sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 128
-        self.width = 64
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((64, 128))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.rect.centerx = position_x
@@ -145,7 +204,7 @@ class Slasher(pygame.sprite.Sprite):
         self.speed = 8192
         self.hp = 128
 
-    def update(self, delta_time, layout):
+    def update(self, delta_time, layout, player):
         """Slasher update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
@@ -184,9 +243,7 @@ class Lancer(pygame.sprite.Sprite):
     """Lancer sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 96
-        self.width = 48
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((64, 128))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.rect.centerx = position_x
@@ -195,7 +252,7 @@ class Lancer(pygame.sprite.Sprite):
         self.speed = 8192
         self.hp = 128
 
-    def update(self, delta_time, layout):
+    def update(self, delta_time, layout, player):
         """Lancer update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
@@ -245,7 +302,7 @@ class Scarecrow(pygame.sprite.Sprite):
         self.speed = 8192
         self.hp = 2048
 
-    def update(self, delta_time, layout):
+    def update(self, delta_time, layout, player):
         """Scarecrow update function."""
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
@@ -335,7 +392,7 @@ def generate_map():
 
     for _ in range(random.randrange(5, 8)):
         while True:
-            i, j = random.randrange(0, MAP_SIZE), random.randrange(0, MAP_SIZE)
+            i, j = random.randrange(1, MAP_SIZE - 2, 2), random.randrange(1, MAP_SIZE - 1, 2)
             if (layout[i][j] == ' ' and layout[i + 1][j] == '#' and
                 layout[i][j - 1] not in avoid_chars and
                 layout[i][j + 1] not in avoid_chars):
@@ -395,10 +452,13 @@ def level(screen):
     tile_to_class = {'P': Player, '1': Kamikaze, '2': Slasher, '3': Lancer}
     player = create_entities(layout, sprites, tile_to_class)
     while handle_events(player):
-        sprites.update(clock.get_time() / 1000, layout)
+        sprites.update(clock.get_time() / 1000, layout, player)
         camera_x, camera_y = update_camera(player, layout, screen)
         draw_tiles(layout, screen, camera_x, camera_y)
         update_positions(sprites, camera_x, camera_y, player)
+        for sprite in sprites:
+            if sprite.hp == 0:
+                sprites.remove(sprite)
         sprites.draw(screen)
         reset_positions(sprites, camera_x, camera_y, player)
         pygame.display.update()
@@ -410,7 +470,7 @@ def create_entities(layout, sprites, tile_to_class):
         for x, tile in enumerate(row):
             if tile in tile_to_class:
                 entity = tile_to_class[tile](x*TILE_SIZE + TILE_SIZE // 2,
-                                              y*TILE_SIZE if tile == '1' else (y + 1)*TILE_SIZE)
+                                            y*TILE_SIZE if tile == '1' else (y + 1)*TILE_SIZE)
                 sprites.add(entity)
                 if tile == 'P':
                     player = entity
