@@ -8,6 +8,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+BLUE = (0, 0, 255)
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
@@ -65,6 +66,11 @@ class Player(pygame.sprite.Sprite):
         self.max_jump = 2
         self.gravity = 16
         self.hp = 1024
+        self.sword_image = pygame.Surface((64, 32))
+        self.sword_image.fill(BLUE)
+        self.sword_rect = self.sword_image.get_rect()
+        self.sword_rect.left = position_x
+        self.sword_rect.centery = position_y
 
     def update(self, delta_time, layout, player):
         """Player update function."""
@@ -115,6 +121,7 @@ class Player(pygame.sprite.Sprite):
     def draw(self, screen):
         """Player draw function."""
         screen.blit(self.image, self.rect)
+        screen.blit(self.sword_image, self.sword_rect)
 
 class Kamikaze(pygame.sprite.Sprite):
     """Kamikaze sprite class."""
