@@ -69,8 +69,6 @@ class Player(pygame.sprite.Sprite):
         self.sword_image = pygame.Surface((64, 32))
         self.sword_image.fill(BLUE)
         self.sword_rect = self.sword_image.get_rect()
-        self.sword_rect.left = position_x
-        self.sword_rect.centery = position_y
 
     def update(self, delta_time, layout, player):
         """Player update function."""
@@ -78,6 +76,8 @@ class Player(pygame.sprite.Sprite):
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
+        self.sword_rect.x = self.rect.centerx
+        self.sword_rect.y = self.rect.centery
 
     def _collisions(self, layout, direction):
         collision = False
@@ -467,6 +467,8 @@ def level(screen):
             if sprite.hp == 0:
                 sprites.remove(sprite)
         sprites.draw(screen)
+        print(player.rect)
+        print(player.sword_rect)
         reset_positions(sprites, camera_x, camera_y, player)
         pygame.display.update()
         clock.tick(60)
