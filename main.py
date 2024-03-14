@@ -32,6 +32,8 @@ class Player(pygame.sprite.Sprite):
         self.sword_image = pygame.Surface((64, 32))
         self.sword_image.fill(BLUE)
         self.sword_rect = self.sword_image.get_rect()
+        self.sword_rect.x = self.rect.centerx
+        self.sword_rect.y = self.rect.centery
 
     def update(self, delta_time, layout, player):
         """Player update function."""
@@ -39,8 +41,8 @@ class Player(pygame.sprite.Sprite):
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self._collisions(layout, 'y')
-        self.sword_rect.x = self.rect.centerx
-        self.sword_rect.y = self.rect.centery
+        self.sword_rect.centerx = self.rect.centerx
+        self.sword_rect.centery = self.rect.centery - 3320
 
     def _collisions(self, layout, direction):
         collision = False
@@ -99,6 +101,7 @@ class Kamikaze(pygame.sprite.Sprite):
         self.speed = 2048
         self.hp = 64
         self.enable = False
+        self.visible = False
 
     def move(self, player, layout):
         """Move towards the player."""
@@ -106,11 +109,16 @@ class Kamikaze(pygame.sprite.Sprite):
             for x, tile in enumerate(row):
                 if tile == '#':
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    if not tile_rect.clipline((self.rect.centerx, self.rect.centery), (player.rect.centerx, player.rect.centery)) and \
-                        -500 < player.rect.centerx - self.rect.centerx > 500 and \
-                        -500 < player.rect.centery - self.rect.centery > 500:
-                        direction = pygame.Vector2((player.rect.centerx - self.rect.centerx) / 500, (player.rect.centery - self.rect.centery) / 500)
-                        self.vel = direction * self.speed
+                    if not tile_rect.clipline((self.rect.centerx, self.rect.centery), (player.rect.centerx, player.rect.centery)):
+                        self.visible = True
+                    else:
+                        self.visible = False
+        
+        if self.visible == True and \
+            -500 < (player.rect.centerx - self.rect.centerx) < 500 and \
+            -500 < (player.rect.centery - self.rect.centery) < 500:
+            direction = pygame.Vector2((player.rect.centerx - self.rect.centerx) / 500, (player.rect.centery - self.rect.centery) / 500)
+            self.vel = direction * self.speed
 
     def enabling(self, player):
         """Enable movement."""
@@ -431,6 +439,8 @@ def level(screen):
             if sprite.hp == 0:
                 sprites.remove(sprite)
         sprites.draw(screen)
+        print("Player: " + str(player.rect))
+        print("Sword: " + str(player.sword_rect))
         reset_positions(sprites, camera_x, camera_y, player)
         pygame.display.update()
         clock.tick(60)

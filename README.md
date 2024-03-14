@@ -9,7 +9,7 @@ Python game using the Pygame libraly.
 - [ ] Player HP decreses by one every second
 - [ ] Enemies drop HP
 - [ ] Enemies
-  - [ ] Kamikaze
+  - [X] Kamikaze
   - [ ] Slasher
   - [ ] Lancers
   - [ ] The Scarecrow
