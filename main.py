@@ -14,43 +14,6 @@ SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
 
-class AStarPathFinder:
-    def __init__(self):
-        self.directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
-
-    def heuristic(self, a, b):
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-    def find_path(self, start, goal, layout):
-        start, goal = tuple(start), tuple(goal)
-        frontier = []
-        heapq.heappush(frontier, (0, start))
-        came_from = {start: None}
-        cost_so_far = {start: 0}
-
-        while frontier:
-            _, current = heapq.heappop(frontier)
-
-            if current == goal:
-                path = []
-                while current is not None:
-                    path.append(current)
-                    current = came_from[current]
-                path.reverse()
-                return path
-
-            for dx, dy in self.directions:
-                next = current[0] + dx, current[1] + dy
-                if 0 <= next[0] < len(layout[0]) and 0 <= next[1] < len(layout) and layout[next[1]][next[0]] != '#':
-                    new_cost = cost_so_far[current] + 1
-                    if next not in cost_so_far or new_cost < cost_so_far[next]:
-                        cost_so_far[next] = new_cost
-                        priority = new_cost + self.heuristic(goal, next)
-                        heapq.heappush(frontier, (priority, next))
-                        came_from[next] = current
-
-        return None
-
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
     def __init__(self, position_x, position_y):
@@ -139,19 +102,20 @@ class Kamikaze(pygame.sprite.Sprite):
 
     def move(self, player, layout):
         """Move towards the player."""
-        start = (self.rect.x, self.rect.y)
-        goal = (player.rect.x, player.rect.y)
-        path = AStarPathFinder().find_path(start, goal, layout)
-
-        if path:
-            next_step = path[0]
-            direction = pygame.Vector2(next_step[0] - self.rect.x, next_step[1] - self.rect.y)
-            self.vel = direction.normalize() * self.speed
+        for y, row in enumerate(layout):
+            for x, tile in enumerate(row):
+                if tile == '#':
+                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    if not tile_rect.clipline((self.rect.centerx, self.rect.centery), (player.rect.centerx, player.rect.centery)) and \
+                        -500 < player.rect.centerx - self.rect.centerx > 500 and \
+                        -500 < player.rect.centery - self.rect.centery > 500:
+                        direction = pygame.Vector2((player.rect.centerx - self.rect.centerx) / 500, (player.rect.centery - self.rect.centery) / 500)
+                        self.vel = direction * self.speed
 
     def enabling(self, player):
         """Enable movement."""
         direction = pygame.Vector2(player.rect.x - self.rect.x, (player.rect.y + player.rect.height // 2) - self.rect.y)
-        within_screen = -TILE_SIZE*3 <= direction.x <= TILE_SIZE*3 and -TILE_SIZE*0.9 <= direction.y <= TILE_SIZE*0.9
+        within_screen = -TILE_SIZE*3 < direction.x < TILE_SIZE*3 and -TILE_SIZE*0.9 < direction.y < TILE_SIZE*0.9
 
         if within_screen:
             self.enable = True
@@ -467,8 +431,6 @@ def level(screen):
             if sprite.hp == 0:
                 sprites.remove(sprite)
         sprites.draw(screen)
-        print(player.rect)
-        print(player.sword_rect)
         reset_positions(sprites, camera_x, camera_y, player)
         pygame.display.update()
         clock.tick(60)
