@@ -15,6 +15,7 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
+LEVEL_NUMBER = 0
 
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
@@ -319,8 +320,8 @@ def generate_map(map_size: int) -> List[List[str]]:
         layout = generate_layout(map_size, size_1)
 
     for i in range(1, MAP_SIZE - 1):
-        if layout[MAP_SIZE - 1][i] == ' ':
-            layout[MAP_SIZE - 1][i] = 'E'
+        if layout[1][i] == ' ':
+            layout[1][i] = 'E'
             break
 
     return layout
@@ -371,6 +372,7 @@ def game_over(screen):
 
 def level(screen):
     """Level function."""
+    global LEVEL_NUMBER
     start_time = pygame.time.get_ticks()
     clock = pygame.time.Clock()
     layout = generate_map(MAP_SIZE)
@@ -389,6 +391,13 @@ def level(screen):
             break
         for enemy in enemies:
             enemy.draw(screen)
+        for y, row in enumerate(layout):
+            for x, tile in enumerate(row):
+                if tile == 'E':
+                    tile_rect = pygame.Rect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    if player.rect.colliderect(tile_rect):
+                        LEVEL_NUMBER += 1
+                        level(screen)
         player.draw(screen)
         reset_positions(enemies, camera_x, camera_y, player)
         pygame.display.update()
