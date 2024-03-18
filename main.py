@@ -25,7 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_counter = 0
         self.speed = 1024
         self.gravity = 16
-        self.hp = 1024
+        self.hp = 512
         self.sword_image = self._create_surface((64, 32), BLUE)
         self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.direction = 0
@@ -90,10 +90,7 @@ class Player(pygame.sprite.Sprite):
             self.jump_counter += 1
 
     def attack(self):
-        original_sword_image = self.sword_image
-        self.sword_image = pygame.transform.scale(original_sword_image, (original_sword_image.get_width() * 2, original_sword_image.get_height() * 2))
-        self.sword_rect = self.sword_image.get_rect()
-        self.sword_rect.center = self.rect.center
+        pass
 
     def draw(self, screen):
         """Player draw function."""
@@ -108,7 +105,7 @@ class Kamikaze(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
         self.vel = pygame.Vector2(0, 0)
         self.speed = 2048
-        self.hp = 64
+        self.hp = 128
         self.enable = False
         self.visible = False
 
@@ -117,6 +114,10 @@ class Kamikaze(pygame.sprite.Sprite):
         surface = pygame.Surface(size)
         surface.fill(color)
         return surface
+
+    def enabled(self, player):
+        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
+            self.enable = True
 
     def move(self, player, layout):
         """Move towards the player."""
@@ -127,19 +128,13 @@ class Kamikaze(pygame.sprite.Sprite):
         screen_width_half = SCREEN_WIDTH // 2
         screen_height_half = SCREEN_HEIGHT // 2
 
-        tile_rects = [pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE) 
-                        for y, row in enumerate(layout) for x, tile in enumerate(row) if tile == '#']
-
-        self.visible = not any(tile_rect.clipline((self_center_x, self_center_y), (player_center_x, player_center_y)) for tile_rect in tile_rects)
-
-        if self.visible:
-            distance_to_player = ((player_center_x - self_center_x)**2 + (player_center_y - self_center_y)**2)**0.5
-            if distance_to_player <= 1000:
-                direction = pygame.Vector2((player_center_x - self_center_x) / screen_width_half,
-                                           (player_center_y - self_center_y) / screen_height_half)
-                self.vel = direction * self.speed
-            else:
-                self.vel = pygame.Vector2(0, 0) 
+        distance_to_player = ((player_center_x - self_center_x)**2 + (player_center_y - self_center_y)**2)**0.5
+        if distance_to_player <= 1000:
+            direction = pygame.Vector2((player_center_x - self_center_x) / screen_width_half,
+                                        (player_center_y - self_center_y) / screen_height_half)
+            self.vel = direction * self.speed
+        else:
+            self.vel = pygame.Vector2(0, 0)
 
 
     def update(self, delta_time, layout, player):
@@ -147,7 +142,10 @@ class Kamikaze(pygame.sprite.Sprite):
         if player.rect.colliderect(self.rect):
             player.hp -= self.hp
             self.hp = 0
-        self.move(player, layout)
+        if self.enable == False:
+            self.enabled(player)
+        else:
+            self.move(player, layout)
         self.rect.x += self.vel.x * delta_time
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
@@ -185,49 +183,43 @@ class Slasher(pygame.sprite.Sprite):
     """Slasher sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.image = pygame.Surface((64, 128))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.rect.centerx = position_x
-        self.rect.bottom = position_y
-        self.vel = pygame.Vector2(0, 0)
-        self.speed = 8192
-        self.hp = 128
+        self.image = self._create_surface((64, 128), RED)
+        self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
+        self.sword_image = self._create_surface((64, 32), GREEN)
+        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
+        self.enable = False
+        self.hp = 256
+
+    @staticmethod
+    def _create_surface(size, color):
+        surface = pygame.Surface(size)
+        surface.fill(color)
+        return surface
+
+    def enabled(self, player):
+        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
+            self.enable = True
+
+    def move(self, player):
+        """Move towards the player."""
+        self.rect.centerx = player.rect.centerx
+        self.rect.centery = player.rect.centery
+        self.sword_rect.centerx = player.rect.centerx
+        self.sword_rect.centery = player.rect.centery
 
     def update(self, delta_time, layout, player):
         """Slasher update function."""
-        self.rect.x += self.vel.x * delta_time
-        self._collisions(layout, 'x')
-        self.rect.y += self.vel.y * delta_time
-        self._collisions(layout, 'y')
-
-    def _collisions(self, layout, direction):
-        for y, row in enumerate(layout):
-            for x, tile in enumerate(row):
-                if tile == '#':
-                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    if self.rect.colliderect(tile_rect):
-                        self._handle_collision(tile_rect, direction)
-
-    def _handle_collision(self, tile_rect, direction):
-        if direction == 'x':
-            if self.rect.right - tile_rect.left < TILE_SIZE // 2:
-                self.rect.right = tile_rect.left
-                self.vel.x = 0
-            elif self.rect.left - tile_rect.right > -TILE_SIZE // 2:
-                self.rect.left = tile_rect.right
-                self.vel.x = 0
-        elif direction == 'y':
-            if self.rect.bottom - tile_rect.top < TILE_SIZE // 2:
-                self.rect.bottom = tile_rect.top
-                self.vel.y = 0
-            elif self.rect.top - tile_rect.bottom > -TILE_SIZE // 2:
-                self.rect.top = tile_rect.bottom
-                self.vel.y = 0
+        if self.enable == False:
+            self.enabled(player)
+        elif random.random() < 0.025:
+            self.move(player)
+        print('Rect: ' + str(self.rect))
+        print('Sword: ' + str(self.sword_rect))
 
     def draw(self, screen):
         """Slasher draw function."""
         screen.blit(self.image, self.rect)
+        screen.blit(self.sword_image, self.sword_rect)
 
 class Scarecrow(pygame.sprite.Sprite):
     """Scarecrow sprite class."""
@@ -282,7 +274,7 @@ class Scarecrow(pygame.sprite.Sprite):
 def generate_map(map_size: int) -> List[List[str]]:
     """Map generation function"""
     size_1 = map_size - 1
-    entities = ['P', '1', '2', '3']
+    entities = ['1', '2']
 
     def generate_layout(map_size: int, size_1: int) -> List[List[str]]:
         size_5 = map_size // 5
@@ -332,7 +324,7 @@ def generate_map(map_size: int) -> List[List[str]]:
         while True:
             i, j = random.randrange(1, map_size - 1, 2), random.randrange(1, size_1)
             if layout[i][j] == ' ' and layout[i + 1][j] == '#':
-                layout[i][j] = random.choice(entities[1:])
+                layout[i][j] = random.choice(entities)
                 break
 
     return layout
@@ -385,15 +377,12 @@ def level(screen):
 
 def create_player(layout):
     """Function to create a player."""
-    x = None
+    x = MAP_SIZE // 2
     for i in range(1, MAP_SIZE - 1):
         if layout[i][MAP_SIZE - 1] == ' ':
             x = i
             print(x)
             break
-
-    if x is None:
-        x = MAP_SIZE // 2
 
     return Player(x*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
 
