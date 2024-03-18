@@ -204,8 +204,6 @@ class Slasher(pygame.sprite.Sprite):
         """Move towards the player."""
         self.rect.centerx = player.rect.centerx
         self.rect.centery = player.rect.centery
-        self.sword_rect.centerx = player.rect.centerx
-        self.sword_rect.centery = player.rect.centery
 
     def update(self, delta_time, layout, player):
         """Slasher update function."""
@@ -213,8 +211,8 @@ class Slasher(pygame.sprite.Sprite):
             self.enabled(player)
         elif random.random() < 0.025:
             self.move(player)
-        print('Rect: ' + str(self.rect))
-        print('Sword: ' + str(self.sword_rect))
+        self.sword_rect.centerx = self.rect.centerx
+        self.sword_rect.centery = self.rect.centery
 
     def draw(self, screen):
         """Slasher draw function."""
@@ -320,13 +318,6 @@ def generate_map(map_size: int) -> List[List[str]]:
     while not validate_layout(layout, map_size):
         layout = generate_layout(map_size, size_1)
 
-    for _ in range(random.randrange(5, 13)):
-        while True:
-            i, j = random.randrange(1, map_size - 1, 2), random.randrange(1, size_1)
-            if layout[i][j] == ' ' and layout[i + 1][j] == '#':
-                layout[i][j] = random.choice(entities)
-                break
-
     return layout
 
 def main_menu(screen):
@@ -354,6 +345,25 @@ def main_menu(screen):
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
+def game_over(screen):
+    """Game over function."""
+    font = pygame.font.Font(None, 128)
+    over_text = font.render('Game Over', True, WHITE)
+    over_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
+
+    while True:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            return None
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return None
+
+        screen.fill(BLACK)
+        screen.blit(over_text, over_rect)
+        pygame.display.update()
+
 def level(screen):
     """Level function."""
     clock = pygame.time.Clock()
@@ -368,6 +378,9 @@ def level(screen):
         draw_tiles(layout, screen, camera_x, camera_y)
         update_positions(enemies, camera_x, camera_y, player)
         enemies = pygame.sprite.Group(enemy for enemy in enemies if enemy.hp != 0)
+        if player.hp == 0:
+            game_over(screen)
+            break
         for enemy in enemies:
             enemy.draw(screen)
         player.draw(screen)
@@ -388,14 +401,16 @@ def create_player(layout):
 
 def create_enemies(layout):
     """Enemies creation function."""
-    entities = {'1': Kamikaze, '2': Slasher}
     enemies = pygame.sprite.Group()
 
-    for y, row in enumerate(layout):
-        for x, tile in enumerate(row):
-            if tile in entities:
-                entity = entities[tile](x*TILE_SIZE + TILE_SIZE // 2, y*TILE_SIZE if tile == '1' else (y + 1)*TILE_SIZE)
+    for _ in range(random.randrange(9, 13)):
+        while True:
+            i, j = random.randrange(1, MAP_SIZE - 1), random.randrange(1, MAP_SIZE - 1, 2)
+            if layout[i][j] == ' ' and layout[i + 1][j] == '#':
+                entity = random.choice([Kamikaze(j*TILE_SIZE + TILE_SIZE // 2, i*TILE_SIZE),
+                                        Slasher(j*TILE_SIZE + TILE_SIZE // 2, (i + 1)*TILE_SIZE)])
                 enemies.add(entity)
+                break
 
     return enemies
 
