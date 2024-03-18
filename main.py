@@ -10,6 +10,7 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
@@ -272,7 +273,6 @@ class Scarecrow(pygame.sprite.Sprite):
 def generate_map(map_size: int) -> List[List[str]]:
     """Map generation function"""
     size_1 = map_size - 1
-    entities = ['1', '2']
 
     def generate_layout(map_size: int, size_1: int) -> List[List[str]]:
         size_5 = map_size // 5
@@ -317,6 +317,11 @@ def generate_map(map_size: int) -> List[List[str]]:
     layout = generate_layout(map_size, size_1)
     while not validate_layout(layout, map_size):
         layout = generate_layout(map_size, size_1)
+
+    for i in range(1, MAP_SIZE - 1):
+        if layout[MAP_SIZE - 1][i] == ' ':
+            layout[MAP_SIZE - 1][i] = 'E'
+            break
 
     return layout
 
@@ -366,6 +371,7 @@ def game_over(screen):
 
 def level(screen):
     """Level function."""
+    start_time = pygame.time.get_ticks()
     clock = pygame.time.Clock()
     layout = generate_map(MAP_SIZE)
     player = create_player(layout)
@@ -392,9 +398,8 @@ def create_player(layout):
     """Function to create a player."""
     x = MAP_SIZE // 2
     for i in range(1, MAP_SIZE - 1):
-        if layout[i][MAP_SIZE - 1] == ' ':
+        if layout[MAP_SIZE - 1][i] == ' ':
             x = i
-            print(x)
             break
 
     return Player(x*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
@@ -406,7 +411,7 @@ def create_enemies(layout):
     for _ in range(random.randrange(9, 13)):
         while True:
             i, j = random.randrange(1, MAP_SIZE - 1), random.randrange(1, MAP_SIZE - 1, 2)
-            if layout[i][j] == ' ' and layout[i + 1][j] == '#':
+            if layout[i][j] == ' ' and layout[i][j + 1] == '#':
                 entity = random.choice([Kamikaze(j*TILE_SIZE + TILE_SIZE // 2, i*TILE_SIZE),
                                         Slasher(j*TILE_SIZE + TILE_SIZE // 2, (i + 1)*TILE_SIZE)])
                 enemies.add(entity)
@@ -454,6 +459,11 @@ def draw_tiles(layout, screen, camera_x, camera_y):
                     tile = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE - camera_y),
                                         TILE_SIZE, TILE_SIZE)
                     pygame.draw.rect(screen, WHITE, tile)
+                elif (tile == 'E' and (x*TILE_SIZE - camera_x >= 0 or
+                    x*TILE_SIZE - camera_x <= SCREEN_HEIGHT)):
+                    tile = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE - camera_y),
+                                        TILE_SIZE, TILE_SIZE)
+                    pygame.draw.rect(screen, YELLOW, tile)          
 
 def update_positions(enemies, camera_x, camera_y, player):
     """Update position function."""
