@@ -4,19 +4,16 @@ Python game using the Pygame libraly.
 ## TODO
 - [X] Player
 - [ ] Combat
-  - [ ] Slash
-  - [ ] Pary
 - [ ] Player HP decreses by one every second
 - [ ] Enemies drop HP
 - [ ] Enemies
   - [X] Kamikaze
   - [ ] Slasher
-  - [ ] Lancers
-  - [ ] The Scarecrow
+  - [ ] Boss
 - [X] Level Generation
 - [ ] Boss Level
 - [ ] Achievements
-  - [ ] Defeat Scarecrow
+  - [ ] Defeat Boss
   - [ ] Codebreaker (Beat Developer Time)
 - [ ] UI
   - [X] Main Menu

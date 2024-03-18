@@ -3,6 +3,7 @@ from typing import List
 import random
 import pygame
 import heapq
+import time
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -28,6 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.sword_image = self._create_surface((64, 32), BLUE)
         self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.direction = 0
+        self.angle = 0
 
     @staticmethod
     def _create_surface(size, color):
@@ -39,9 +41,9 @@ class Player(pygame.sprite.Sprite):
         """Player update function."""
         self.rect.x += self.vel.x * delta_time
         if self.direction == 1:
-            self.sword_rect.x = self.rect.centerx
+            self.sword_rect.centerx = self.rect.right
         elif self.direction == -1:
-            self.sword_rect.x = self.rect.centerx - self.sword_image.get_width()
+            self.sword_rect.centerx = self.rect.left
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self.sword_rect.centery = self.rect.centery
@@ -87,6 +89,12 @@ class Player(pygame.sprite.Sprite):
             self.vel.y = -self.speed
             self.jump_counter += 1
 
+    def attack(self):
+        original_sword_image = self.sword_image
+        self.sword_image = pygame.transform.scale(original_sword_image, (original_sword_image.get_width() * 2, original_sword_image.get_height() * 2))
+        self.sword_rect = self.sword_image.get_rect()
+        self.sword_rect.center = self.rect.center
+
     def draw(self, screen):
         """Player draw function."""
         screen.blit(self.image, self.rect)
@@ -112,20 +120,27 @@ class Kamikaze(pygame.sprite.Sprite):
 
     def move(self, player, layout):
         """Move towards the player."""
-        for y, row in enumerate(layout):
-            for x, tile in enumerate(row):
-                if tile == '#':
-                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    if not tile_rect.clipline((self.rect.centerx, self.rect.centery), (player.rect.centerx, player.rect.centery)):
-                        self.visible = True
-                        player_x = player.rect.centerx - self.rect.centerx
-                        player_y = player.rect.centerx - self.rect.centerx
-                    else:
-                        self.visible = False
+        player_center_x = player.rect.centerx
+        player_center_y = player.rect.centery
+        self_center_x = self.rect.centerx
+        self_center_y = self.rect.centery
+        screen_width_half = SCREEN_WIDTH // 2
+        screen_height_half = SCREEN_HEIGHT // 2
+
+        tile_rects = [pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE) 
+                        for y, row in enumerate(layout) for x, tile in enumerate(row) if tile == '#']
+
+        self.visible = not any(tile_rect.clipline((self_center_x, self_center_y), (player_center_x, player_center_y)) for tile_rect in tile_rects)
 
         if self.visible:
-            direction = pygame.Vector2(player_x / (SCREEN_WIDTH // 2), player_y / (SCREEN_HEIGHT // 2))
-            self.vel = direction * self.speed
+            distance_to_player = ((player_center_x - self_center_x)**2 + (player_center_y - self_center_y)**2)**0.5
+            if distance_to_player <= 1000:
+                direction = pygame.Vector2((player_center_x - self_center_x) / screen_width_half,
+                                           (player_center_y - self_center_y) / screen_height_half)
+                self.vel = direction * self.speed
+            else:
+                self.vel = pygame.Vector2(0, 0) 
+
 
     def update(self, delta_time, layout, player):
         """Kamikaze update function."""
@@ -212,54 +227,6 @@ class Slasher(pygame.sprite.Sprite):
 
     def draw(self, screen):
         """Slasher draw function."""
-        screen.blit(self.image, self.rect)
-
-class Lancer(pygame.sprite.Sprite):
-    """Lancer sprite class."""
-    def __init__(self, position_x, position_y):
-        super().__init__()
-        self.image = pygame.Surface((64, 128))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.rect.centerx = position_x
-        self.rect.bottom = position_y
-        self.vel = pygame.Vector2(0, 0)
-        self.speed = 8192
-        self.hp = 128
-
-    def update(self, delta_time, layout, player):
-        """Lancer update function."""
-        self.rect.x += self.vel.x * delta_time
-        self._collisions(layout, 'x')
-        self.rect.y += self.vel.y * delta_time
-        self._collisions(layout, 'y')
-
-    def _collisions(self, layout, direction):
-        for y, row in enumerate(layout):
-            for x, tile in enumerate(row):
-                if tile == '#':
-                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    if self.rect.colliderect(tile_rect):
-                        self._handle_collision(tile_rect, direction)
-
-    def _handle_collision(self, tile_rect, direction):
-        if direction == 'x':
-            if self.rect.right - tile_rect.left < TILE_SIZE // 2:
-                self.rect.right = tile_rect.left
-                self.vel.x = 0
-            elif self.rect.left - tile_rect.right > -TILE_SIZE // 2:
-                self.rect.left = tile_rect.right
-                self.vel.x = 0
-        elif direction == 'y':
-            if self.rect.bottom - tile_rect.top < TILE_SIZE // 2:
-                self.rect.bottom = tile_rect.top
-                self.vel.y = 0
-            elif self.rect.top - tile_rect.bottom > -TILE_SIZE // 2:
-                self.rect.top = tile_rect.bottom
-                self.vel.y = 0
-
-    def draw(self, screen):
-        """Lancer draw function."""
         screen.blit(self.image, self.rect)
 
 class Scarecrow(pygame.sprite.Sprite):
@@ -361,14 +328,6 @@ def generate_map(map_size: int) -> List[List[str]]:
     while not validate_layout(layout, map_size):
         layout = generate_layout(map_size, size_1)
 
-    player = next(
-        (i, j)
-        for i in range(size_1 - 1, 1, -2)
-        for j in range(1, size_1)
-        if layout[i][j] == ' '
-    )
-    layout[player[0]][player[1]] = entities[0]
-
     for _ in range(random.randrange(5, 13)):
         while True:
             i, j = random.randrange(1, map_size - 1, 2), random.randrange(1, size_1)
@@ -425,16 +384,22 @@ def level(screen):
         clock.tick(60)
 
 def create_player(layout):
-    """Player creation function."""
-    for y, row in enumerate(layout):
-        for x, tile in enumerate(row):
-            if tile == 'P':
-                return Player(x*TILE_SIZE + TILE_SIZE // 2, (y + 1)*TILE_SIZE)
+    """Function to create a player."""
+    x = None
+    for i in range(1, MAP_SIZE - 1):
+        if layout[i][MAP_SIZE - 1] == ' ':
+            x = i
+            print(x)
+            break
 
+    if x is None:
+        x = MAP_SIZE // 2
+
+    return Player(x*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
 
 def create_enemies(layout):
     """Enemies creation function."""
-    entities = {'1': Kamikaze, '2': Slasher, '3': Lancer}
+    entities = {'1': Kamikaze, '2': Slasher}
     enemies = pygame.sprite.Group()
 
     for y, row in enumerate(layout):
@@ -458,8 +423,10 @@ def handle_events(player):
         if (event.type == pygame.QUIT or
             (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE)):
             return False
-        if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+        elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
             player.jump()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            player.attack()
 
     return True
 
