@@ -2,8 +2,6 @@
 from typing import List
 import random
 import pygame
-import heapq
-import time
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -27,11 +25,10 @@ class Player(pygame.sprite.Sprite):
         self.jump_counter = 0
         self.speed = 1024
         self.gravity = 16
-        self.hp = 512
-        self.sword_image = self._create_surface((64, 32), BLUE)
+        self.hp = 1024
+        self.sword_image = self._create_surface((64, 64), BLUE)
         self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.direction = 0
-        self.angle = 0
 
     @staticmethod
     def _create_surface(size, color):
@@ -92,6 +89,7 @@ class Player(pygame.sprite.Sprite):
             self.jump_counter += 1
 
     def attack(self, enemies):
+        """Attack function."""
         for enemie in enemies:
             if self.rect.colliderect(enemie.rect):
                 enemie.hp -= 128
@@ -123,7 +121,7 @@ class Kamikaze(pygame.sprite.Sprite):
         if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
             self.enable = True
 
-    def move(self, player, layout):
+    def move(self, player, layout, delta_time):
         """Move towards the player."""
         player_center_x = player.rect.centerx
         player_center_y = player.rect.centery
@@ -137,6 +135,10 @@ class Kamikaze(pygame.sprite.Sprite):
             direction = pygame.Vector2((player_center_x - self_center_x) / screen_width_half,
                                         (player_center_y - self_center_y) / screen_height_half)
             self.vel = direction * self.speed
+            self.rect.x += self.vel.x * delta_time
+            self._collisions(layout, 'x')
+            self.rect.y += self.vel.y * delta_time
+            self._collisions(layout, 'y')
         else:
             self.vel = pygame.Vector2(0, 0)
 
@@ -146,14 +148,10 @@ class Kamikaze(pygame.sprite.Sprite):
         if player.rect.colliderect(self.rect):
             player.hp -= self.hp
             self.hp = 0
-        if self.enable == False:
+        if self.enable is False:
             self.enabled(player)
         else:
-            self.move(player, layout)
-        self.rect.x += self.vel.x * delta_time
-        self._collisions(layout, 'x')
-        self.rect.y += self.vel.y * delta_time
-        self._collisions(layout, 'y')
+            self.move(player, layout, delta_time)
 
     def _collisions(self, layout, direction):
         for y, row in enumerate(layout):
@@ -211,7 +209,7 @@ class Slasher(pygame.sprite.Sprite):
 
     def update(self, delta_time, layout, player):
         """Slasher update function."""
-        if self.enable == False:
+        if self.enable is False:
             self.enabled(player)
         elif random.random() < 0.025:
             self.move(player)
@@ -221,6 +219,7 @@ class Slasher(pygame.sprite.Sprite):
         self.sword_rect.centery = self.rect.centery
 
     def attack(self, player):
+        """Attack function."""
         if self.rect.colliderect(player.rect):
             player.hp -= 128
 
@@ -381,7 +380,6 @@ def game_over(screen):
 def level(screen):
     """Level function."""
     global LEVEL
-    start_time = pygame.time.get_ticks()
     clock = pygame.time.Clock()
     layout = generate_map(MAP_SIZE)
     player = create_player(layout)
@@ -407,10 +405,10 @@ def level(screen):
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == 'E':
-                    tile_rect = pygame.Rect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    tile_rect = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE) - camera_y, TILE_SIZE, TILE_SIZE)
                     if player.rect.colliderect(tile_rect):
                         LEVEL += 1
-                        if LEVEL < 3
+                        if LEVEL < 3:
                             level(screen)
                         else:
                             boss(screen)
@@ -459,7 +457,7 @@ def handle_events(player, enemies):
         if (event.type == pygame.QUIT or
             (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE)):
             return False
-        elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+        if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
             player.jump()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             player.attack(enemies)
@@ -490,7 +488,7 @@ def draw_tiles(layout, screen, camera_x, camera_y):
                     x*TILE_SIZE - camera_x <= SCREEN_HEIGHT)):
                     tile = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE - camera_y),
                                         TILE_SIZE, TILE_SIZE)
-                    pygame.draw.rect(screen, YELLOW, tile)          
+                    pygame.draw.rect(screen, YELLOW, tile)
 
 def update_positions(enemies, camera_x, camera_y, player):
     """Update position function."""
@@ -517,6 +515,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Game')
+
+    start_time = pygame.time.get_ticks()
 
     while main_menu(screen):
         level(screen)
