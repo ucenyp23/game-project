@@ -15,7 +15,7 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
-LEVEL_NUMBER = 0
+LEVEL = 0
 
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
@@ -91,8 +91,10 @@ class Player(pygame.sprite.Sprite):
             self.vel.y = -self.speed
             self.jump_counter += 1
 
-    def attack(self):
-        pass
+    def attack(self, enemies):
+        for enemie in enemies:
+            if self.rect.colliderect(enemie.rect):
+                enemie.hp -= 128
 
     def draw(self, screen):
         """Player draw function."""
@@ -213,8 +215,14 @@ class Slasher(pygame.sprite.Sprite):
             self.enabled(player)
         elif random.random() < 0.025:
             self.move(player)
+        if random.random() < 0.025:
+            self.attack(player)
         self.sword_rect.centerx = self.rect.centerx
         self.sword_rect.centery = self.rect.centery
+
+    def attack(self, player):
+        if self.rect.colliderect(player.rect):
+            player.hp -= 128
 
     def draw(self, screen):
         """Slasher draw function."""
@@ -372,32 +380,41 @@ def game_over(screen):
 
 def level(screen):
     """Level function."""
-    global LEVEL_NUMBER
+    global LEVEL
     start_time = pygame.time.get_ticks()
     clock = pygame.time.Clock()
     layout = generate_map(MAP_SIZE)
     player = create_player(layout)
     enemies = create_enemies(layout)
-    while handle_events(player):
+
+    while handle_events(player, enemies):
         delta_time = clock.get_time() / 1000
         enemies.update(delta_time, layout, player)
         player.update(delta_time, layout)
         camera_x, camera_y = update_camera(player, layout, screen)
         draw_tiles(layout, screen, camera_x, camera_y)
         update_positions(enemies, camera_x, camera_y, player)
+
         enemies = pygame.sprite.Group(enemy for enemy in enemies if enemy.hp != 0)
+
         if player.hp == 0:
             game_over(screen)
             break
+
         for enemy in enemies:
             enemy.draw(screen)
+
         for y, row in enumerate(layout):
             for x, tile in enumerate(row):
                 if tile == 'E':
                     tile_rect = pygame.Rect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if player.rect.colliderect(tile_rect):
-                        LEVEL_NUMBER += 1
-                        level(screen)
+                        LEVEL += 1
+                        if LEVEL < 3
+                            level(screen)
+                        else:
+                            boss(screen)
+
         player.draw(screen)
         reset_positions(enemies, camera_x, camera_y, player)
         pygame.display.update()
@@ -405,13 +422,9 @@ def level(screen):
 
 def create_player(layout):
     """Function to create a player."""
-    x = MAP_SIZE // 2
-    for i in range(1, MAP_SIZE - 1):
-        if layout[MAP_SIZE - 1][i] == ' ':
-            x = i
-            break
-
-    return Player(x*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
+    for i in range(1, MAP_SIZE - 2):
+        if layout[MAP_SIZE - 2][i] == ' ':
+            return Player(i*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
 
 def create_enemies(layout):
     """Enemies creation function."""
@@ -421,14 +434,19 @@ def create_enemies(layout):
         while True:
             i, j = random.randrange(1, MAP_SIZE - 1), random.randrange(1, MAP_SIZE - 1, 2)
             if layout[i][j] == ' ' and layout[i][j + 1] == '#':
-                entity = random.choice([Kamikaze(j*TILE_SIZE + TILE_SIZE // 2, i*TILE_SIZE),
-                                        Slasher(j*TILE_SIZE + TILE_SIZE // 2, (i + 1)*TILE_SIZE)])
+                if LEVEL == 0:
+                    entity = Kamikaze(j*TILE_SIZE + TILE_SIZE // 2, i*TILE_SIZE)
+                elif LEVEL == 1:
+                    entity = Slasher(j*TILE_SIZE + TILE_SIZE // 2, (i + 1)*TILE_SIZE)
+                elif LEVEL == 2:
+                    entity = random.choice([Kamikaze(j*TILE_SIZE + TILE_SIZE // 2, i*TILE_SIZE),
+                                            Slasher(j*TILE_SIZE + TILE_SIZE // 2, (i + 1)*TILE_SIZE)])
                 enemies.add(entity)
                 break
 
     return enemies
 
-def handle_events(player):
+def handle_events(player, enemies):
     """Events handling function."""
     keys = pygame.key.get_pressed()
     player.move(-1 if keys[pygame.K_a] and not keys[pygame.K_d] else
@@ -444,7 +462,7 @@ def handle_events(player):
         elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
             player.jump()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            player.attack()
+            player.attack(enemies)
 
     return True
 
