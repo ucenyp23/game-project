@@ -3,12 +3,12 @@ Python game using the Pygame libraly.
 
 ## TODO
 - [X] Player
-- [ ] Combat
+- [X] Combat
 - [ ] Player HP decreses by one every second
 - [ ] Enemies drop HP
 - [ ] Enemies
   - [X] Kamikaze
-  - [ ] Slasher
+  - [X] Slasher
   - [ ] Boss
 - [X] Level Generation
 - [ ] Boss Level
