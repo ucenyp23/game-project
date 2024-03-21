@@ -13,7 +13,7 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
-LEVEL = 0
+LEVEL = 4
 
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
@@ -90,9 +90,13 @@ class Player(pygame.sprite.Sprite):
 
     def attack(self, enemies):
         """Attack function."""
-        for enemie in enemies:
-            if self.rect.colliderect(enemie.rect):
-                enemie.hp -= 128
+        if LEVEL < 3:
+            for enemie in enemies:
+                if self.rect.colliderect(enemie.rect):
+                    enemie.hp -= 128
+        else:
+            if self.rect.colliderect(enemies.rect):
+                enemies.hp -= 128
 
     def draw(self, screen):
         """Player draw function."""
@@ -232,51 +236,41 @@ class Scarecrow(pygame.sprite.Sprite):
     """Scarecrow sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.height = 32
-        self.width = 32
-        self.image = pygame.Surface((self.width, self.height))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.rect.centerx = position_x
-        self.rect.bottom = position_y
-        self.vel = pygame.Vector2(0, 0)
-        self.speed = 8192
+        self.image = self._create_surface((64, 128), RED)
+        self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
+        self.sword_image = self._create_surface((64, 32), GREEN)
+        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.hp = 2048
 
+    @staticmethod
+    def _create_surface(size, color):
+        surface = pygame.Surface(size)
+        surface.fill(color)
+        return surface
+
+    def move(self, player):
+        """Move towards the player."""
+        self.rect.centerx = player.rect.centerx
+        self.rect.centery = player.rect.centery
+
     def update(self, delta_time, layout, player):
-        """Scarecrow update function."""
-        self.rect.x += self.vel.x * delta_time
-        self._collisions(layout, 'x')
-        self.rect.y += self.vel.y * delta_time
-        self._collisions(layout, 'y')
+        """Slasher update function."""
+        if random.random() < 0.025:
+            self.move(player)
+        if random.random() < 0.025:
+            self.attack(player)
+        self.sword_rect.centerx = self.rect.centerx
+        self.sword_rect.centery = self.rect.centery
 
-    def _collisions(self, layout, direction):
-        for y, row in enumerate(layout):
-            for x, tile in enumerate(row):
-                if tile == '#':
-                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    if self.rect.colliderect(tile_rect):
-                        self._handle_collision(tile_rect, direction)
-
-    def _handle_collision(self, tile_rect, direction):
-        if direction == 'x':
-            if self.rect.right - tile_rect.left < TILE_SIZE // 2:
-                self.rect.right = tile_rect.left
-                self.vel.x = 0
-            elif self.rect.left - tile_rect.right > -TILE_SIZE // 2:
-                self.rect.left = tile_rect.right
-                self.vel.x = 0
-        elif direction == 'y':
-            if self.rect.bottom - tile_rect.top < TILE_SIZE // 2:
-                self.rect.bottom = tile_rect.top
-                self.vel.y = 0
-            elif self.rect.top - tile_rect.bottom > -TILE_SIZE // 2:
-                self.rect.top = tile_rect.bottom
-                self.vel.y = 0
+    def attack(self, player):
+        """Attack function."""
+        if self.rect.colliderect(player.rect):
+            player.hp -= 128
 
     def draw(self, screen):
-        """Scarecrow draw function."""
+        """Slasher draw function."""
         screen.blit(self.image, self.rect)
+        screen.blit(self.sword_image, self.sword_rect)
 
 def generate_map(map_size: int) -> List[List[str]]:
     """Map generation function"""
@@ -418,6 +412,37 @@ def level(screen):
         pygame.display.update()
         clock.tick(60)
 
+def boss(screen):
+    """Boss Level function."""
+    clock = pygame.time.Clock()
+    layout = [['#', '#', '#', '#', '#', '#', '#', '#'],
+                ['#', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
+                ['#', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
+                ['#', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
+                ['#', '#', '#', '#', '#', '#', '#', '#']]
+    player = Player(TILE_SIZE + TILE_SIZE // 2, 4*TILE_SIZE)
+    enemy = Scarecrow(6*TILE_SIZE + TILE_SIZE // 2, 4*TILE_SIZE)
+
+    while handle_events(player, enemy):
+        delta_time = clock.get_time() / 1000
+        enemy.update(delta_time, layout, player)
+        player.update(delta_time, layout)
+        camera_x, camera_y = update_camera(player, layout, screen)
+        draw_tiles(layout, screen, camera_x, camera_y)
+
+        if enemy == 0:
+            del enemy
+
+        if player.hp == 0:
+            game_over(screen)
+            break
+
+        enemy.draw(screen)
+
+        player.draw(screen)
+        pygame.display.update()
+        clock.tick(60)
+
 def create_player(layout):
     """Function to create a player."""
     for i in range(1, MAP_SIZE - 2):
@@ -518,6 +543,7 @@ def main():
 
     start_time = pygame.time.get_ticks()
 
+    boss(screen)
     while main_menu(screen):
         level(screen)
 
