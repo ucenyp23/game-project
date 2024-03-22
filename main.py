@@ -102,6 +102,8 @@ class Player(pygame.sprite.Sprite):
         """Player draw function."""
         screen.blit(self.image, self.rect)
         screen.blit(self.sword_image, self.sword_rect)
+        pygame.draw.rect(screen, "red", (25, 25, 300, 50))
+        pygame.draw.rect(screen, "green", (25, 25, 300*(self.hp / 1024), 50))
 
 class Kamikaze(pygame.sprite.Sprite):
     """Kamikaze sprite class."""
@@ -387,9 +389,11 @@ def level(screen):
         draw_tiles(layout, screen, camera_x, camera_y)
         update_positions(enemies, camera_x, camera_y, player)
 
-        enemies = pygame.sprite.Group(enemy for enemy in enemies if enemy.hp != 0)
+        for enemie in enemies:
+            if enemie.hp <= 0:
+                enemies.remove(enemie)
 
-        if player.hp == 0:
+        if player.hp <= 0:
             game_over(screen)
             break
 
@@ -426,11 +430,11 @@ def boss(screen):
         player.update(delta_time, layout)
         draw_tiles(layout, screen, camera_x, camera_y)
 
-        if enemy.hp == 0:
+        if enemy.hp <= 0:
             del enemy
             return None
 
-        if player.hp == 0:
+        if player.hp <= 0:
             game_over(screen)
             break
 
@@ -471,9 +475,6 @@ def handle_events(player, enemies, LEVEL):
     keys = pygame.key.get_pressed()
     player.move(-1 if keys[pygame.K_a] and not keys[pygame.K_d] else
                  1 if keys[pygame.K_d] and not keys[pygame.K_a] else 0)
-
-    if keys[pygame.K_ESCAPE]:
-        return False
 
     for event in pygame.event.get():
         if (event.type == pygame.QUIT or
@@ -550,6 +551,7 @@ def main():
             level(screen)
         elif LEVEL == 3:
             boss(screen)
+            score(screen, start_time)
             LEVEL = 0
 
     pygame.quit()
