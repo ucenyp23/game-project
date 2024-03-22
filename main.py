@@ -430,7 +430,7 @@ def boss(screen):
         camera_x, camera_y = update_camera(player, layout, screen)
         draw_tiles(layout, screen, camera_x, camera_y)
 
-        if enemy == 0:
+        if enemy.hp == 0:
             del enemy
 
         if player.hp == 0:
