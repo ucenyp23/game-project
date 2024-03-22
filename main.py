@@ -13,7 +13,7 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
-LEVEL = 4
+LEVEL = 0
 
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
@@ -26,7 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 1024
         self.gravity = 16
         self.hp = 1024
-        self.sword_image = self._create_surface((64, 64), BLUE)
+        self.sword_image = self._create_surface((96, 96), BLUE)
         self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.direction = 0
 
@@ -40,9 +40,9 @@ class Player(pygame.sprite.Sprite):
         """Player update function."""
         self.rect.x += self.vel.x * delta_time
         if self.direction == 1:
-            self.sword_rect.centerx = self.rect.right
+            self.sword_rect.left = self.rect.centerx
         elif self.direction == -1:
-            self.sword_rect.centerx = self.rect.left
+            self.sword_rect.right = self.rect.centerx
         self._collisions(layout, 'x')
         self.rect.y += self.vel.y * delta_time
         self.sword_rect.centery = self.rect.centery
@@ -340,12 +340,12 @@ def main_menu(screen):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return False
+                return True
             if event.type == pygame.MOUSEBUTTONUP:
                 if play_rect.collidepoint(pygame.mouse.get_pos()):
-                    return True
-                if quit_rect.collidepoint(pygame.mouse.get_pos()):
                     return False
+                if quit_rect.collidepoint(pygame.mouse.get_pos()):
+                    return True
 
         screen.fill(BLACK)
         screen.blit(play_text, play_rect)
@@ -379,7 +379,7 @@ def level(screen):
     player = create_player(layout)
     enemies = create_enemies(layout)
 
-    while handle_events(player, enemies):
+    while handle_events(player, enemies, LEVEL):
         delta_time = clock.get_time() / 1000
         enemies.update(delta_time, layout, player)
         player.update(delta_time, layout)
@@ -402,10 +402,6 @@ def level(screen):
                     tile_rect = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE) - camera_y, TILE_SIZE, TILE_SIZE)
                     if player.rect.colliderect(tile_rect):
                         LEVEL += 1
-                        if LEVEL < 3:
-                            level(screen)
-                        else:
-                            boss(screen)
 
         player.draw(screen)
         reset_positions(enemies, camera_x, camera_y, player)
@@ -422,16 +418,17 @@ def boss(screen):
                 ['#', '#', '#', '#', '#', '#', '#', '#']]
     player = Player(TILE_SIZE + TILE_SIZE // 2, 4*TILE_SIZE)
     enemy = Scarecrow(6*TILE_SIZE + TILE_SIZE // 2, 4*TILE_SIZE)
+    camera_x, camera_y = 0, 40
 
     while handle_events(player, enemy):
         delta_time = clock.get_time() / 1000
         enemy.update(delta_time, layout, player)
         player.update(delta_time, layout)
-        camera_x, camera_y = update_camera(player, layout, screen)
         draw_tiles(layout, screen, camera_x, camera_y)
 
         if enemy.hp == 0:
             del enemy
+            return None
 
         if player.hp == 0:
             game_over(screen)
@@ -469,7 +466,7 @@ def create_enemies(layout):
 
     return enemies
 
-def handle_events(player, enemies):
+def handle_events(player, enemies, LEVEL):
     """Events handling function."""
     keys = pygame.key.get_pressed()
     player.move(-1 if keys[pygame.K_a] and not keys[pygame.K_d] else
@@ -481,6 +478,7 @@ def handle_events(player, enemies):
     for event in pygame.event.get():
         if (event.type == pygame.QUIT or
             (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE)):
+            LEVEL = 0
             return False
         if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
             player.jump()
@@ -537,15 +535,22 @@ def reset_positions(enemies, camera_x, camera_y, player):
 
 def main():
     """Main function."""
+    global LEVEL
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Game')
 
     start_time = pygame.time.get_ticks()
 
-    boss(screen)
-    while main_menu(screen):
-        level(screen)
+    while True:
+        if LEVEL == 0:
+            if main_menu(screen):
+                break
+        if LEVEL < 3:
+            level(screen)
+        elif LEVEL == 3:
+            boss(screen)
+            LEVEL = 0
 
     pygame.quit()
 
