@@ -22,13 +22,13 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.image = self._create_surface((64, 128), GREEN)
         self.rect = self.image.get_rect(centerx=position_x, bottom=position_y)
+        self.sword_image = self._create_surface((96, 96), BLUE)
+        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
         self.speed = 1024
         self.gravity = 16
         self.hp = 1024
-        self.sword_image = self._create_surface((96, 96), BLUE)
-        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.direction = 0
 
     @staticmethod
@@ -91,12 +91,13 @@ class Player(pygame.sprite.Sprite):
 
     def attack(self, enemies):
         """Attack function."""
+        global LEVEL
         if LEVEL < 3:
             for enemie in enemies:
-                if self.rect.colliderect(enemie.rect):
+                if self.sword_rect.colliderect(enemie.rect):
                     enemie.hp -= 128
         else:
-            if self.rect.colliderect(enemies.rect):
+            if self.sword_rect.colliderect(enemies.rect):
                 enemies.hp -= 128
 
     def draw(self, screen):
@@ -194,7 +195,7 @@ class Slasher(pygame.sprite.Sprite):
         super().__init__()
         self.image = self._create_surface((64, 128), RED)
         self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
-        self.sword_image = self._create_surface((64, 32), GREEN)
+        self.sword_image = pygame.Surface((128, 64))
         self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.enable = False
         self.hp = 256
@@ -233,15 +234,14 @@ class Slasher(pygame.sprite.Sprite):
     def draw(self, screen):
         """Slasher draw function."""
         screen.blit(self.image, self.rect)
-        screen.blit(self.sword_image, self.sword_rect)
 
 class Scarecrow(pygame.sprite.Sprite):
     """Scarecrow sprite class."""
     def __init__(self, position_x, position_y):
         super().__init__()
-        self.image = self._create_surface((64, 128), RED)
+        self.image = self._create_surface((96, 192), RED)
         self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
-        self.sword_image = self._create_surface((64, 32), GREEN)
+        self.sword_image = pygame.Surface((128, 128))
         self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
         self.hp = 2048
 
@@ -273,14 +273,13 @@ class Scarecrow(pygame.sprite.Sprite):
     def draw(self, screen):
         """Slasher draw function."""
         screen.blit(self.image, self.rect)
-        screen.blit(self.sword_image, self.sword_rect)
 
 def generate_map(map_size: int) -> List[List[str]]:
     """Map generation function"""
     size_1 = map_size - 1
+    size_5 = map_size // 5
 
-    def generate_layout(map_size: int, size_1: int) -> List[List[str]]:
-        size_5 = map_size // 5
+    def generate_layout() -> List[List[str]]:
         layout = [['#' if i % 2 == 0 or j in {0, size_1} or i in {0, size_1} else ' '
                    for j in range(map_size)] for i in range(map_size)]
 
@@ -301,7 +300,7 @@ def generate_map(map_size: int) -> List[List[str]]:
 
         return layout
 
-    def validate_layout(layout: List[List[str]], map_size: int) -> bool:
+    def validate_layout(layout: List[List[str]]) -> bool:
         visited = set()
         start = next((i, j) for i in range(map_size)
                     for j in range(map_size) if layout[i][j] == ' ')
@@ -319,11 +318,11 @@ def generate_map(map_size: int) -> List[List[str]]:
         return all(layout[i][j] != ' ' or (i, j) in visited
                     for i in range(map_size) for j in range(map_size))
 
-    layout = generate_layout(map_size, size_1)
-    while not validate_layout(layout, map_size):
-        layout = generate_layout(map_size, size_1)
+    layout = generate_layout()
+    while not validate_layout(layout):
+        layout = generate_layout()
 
-    for i in range(1, MAP_SIZE - 1):
+    for i in range(1, size_1):
         if layout[1][i] == ' ':
             layout[1][i] = 'E'
             break
@@ -355,15 +354,15 @@ def main_menu(screen):
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
-def score(screen):
+def score(screen, start_time):
     """Score function."""
     font = pygame.font.Font(None, 128)
-    time = (pygame.time.get_ticks() - start_ticks) / 1000
+    time = (pygame.time.get_ticks() - start_time) / 1000
     minute = math.floor(time / 60)
-    second = time % 60
-    score_text = font.render('Time: ' + minute + ' ' + second, True, WHITE)
-    score_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width() // 2,
-    SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
+    second = math.floor(time) % 60
+    score_text = font.render('Time: ' + str(minute) + ':' + str(second), True, WHITE)
+    score_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 - score_text.get_height() // 2, score_text.get_width(), score_text.get_height())
 
     while True:
         keys = pygame.key.get_pressed()
@@ -403,6 +402,7 @@ def level(screen):
     layout = generate_map(MAP_SIZE)
     player = create_player(layout)
     enemies = create_enemies(layout)
+    exit = False
 
     while handle_events(player, enemies, LEVEL):
         delta_time = clock.get_time() / 1000
@@ -429,9 +429,12 @@ def level(screen):
                     tile_rect = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE) - camera_y, TILE_SIZE, TILE_SIZE)
                     if player.rect.colliderect(tile_rect):
                         LEVEL += 1
+                        exit = True
 
         player.draw(screen)
         reset_positions(enemies, camera_x, camera_y, player)
+        if exit:
+            break
         pygame.display.update()
         clock.tick(60)
 
@@ -447,7 +450,7 @@ def boss(screen):
     enemy = Scarecrow(6*TILE_SIZE + TILE_SIZE // 2, 4*TILE_SIZE)
     camera_x, camera_y = 0, 40
 
-    while handle_events(player, enemy):
+    while handle_events(player, enemy, LEVEL):
         delta_time = clock.get_time() / 1000
         enemy.update(delta_time, layout, player)
         player.update(delta_time, layout)
@@ -563,6 +566,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Game')
+
+    start_time = pygame.time.get_ticks()
 
     while True:
         if LEVEL == 0:
