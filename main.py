@@ -559,7 +559,7 @@ def draw(screen: pygame.Surface, layout: List[List[str]], enemies, player, camer
         enemies.draw(screen)
     player.draw(screen)
 
-def next_level(layout: List[List[str]], player, camera_x, camera_y) -> bool:
+def next_level(layout: List[List[str]], player, camera_x: int, camera_y: int) -> bool:
     """Check for level exit."""
     global LEVEL
     for y, row in enumerate(layout):
@@ -571,7 +571,7 @@ def next_level(layout: List[List[str]], player, camera_x, camera_y) -> bool:
                     return True
     return False
 
-def update_positions(enemies, camera_x, camera_y, player):
+def update_positions(enemies, camera_x: int, camera_y: int, player):
     """Update position function."""
     player.rect.centerx -= camera_x
     player.rect.centery -= camera_y
@@ -581,7 +581,7 @@ def update_positions(enemies, camera_x, camera_y, player):
         enemy.rect.centerx -= camera_x
         enemy.rect.centery -= camera_y
 
-def reset_positions(enemies, camera_x, camera_y, player):
+def reset_positions(enemies, camera_x: int, camera_y: int, player):
     """Reset position function."""
     player.rect.centerx += camera_x
     player.rect.centery += camera_y
@@ -590,6 +590,12 @@ def reset_positions(enemies, camera_x, camera_y, player):
     for enemy in enemies:
         enemy.rect.centerx += camera_x
         enemy.rect.centery += camera_y
+
+def init_game() -> pygame.Surface:
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption('Game')
+    return screen
 
 def main():
     """Main function."""
@@ -609,12 +615,6 @@ def main():
             LEVEL = 0
 
     pygame.quit()
-
-def init_game()
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Game')
-    return screen
 
 if __name__ == '__main__':
     main()
