@@ -1,6 +1,7 @@
 """This module contains a simple game using pygame."""
 from typing import List
 import random
+import math
 import pygame
 
 WHITE = (255, 255, 255)
@@ -354,6 +355,28 @@ def main_menu(screen):
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
+def score(screen):
+    """Score function."""
+    font = pygame.font.Font(None, 128)
+    time = (pygame.time.get_ticks() - start_ticks) / 1000
+    minute = math.floor(time / 60)
+    second = time % 60
+    score_text = font.render('Time: ' + minute + ' ' + second, True, WHITE)
+    score_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
+
+    while True:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            return None
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return None
+
+        screen.fill(BLACK)
+        screen.blit(score_text, score_rect)
+        pygame.display.update()
+
 def game_over(screen):
     """Game over function."""
     font = pygame.font.Font(None, 128)
@@ -541,10 +564,9 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Game')
 
-    start_time = pygame.time.get_ticks()
-
     while True:
         if LEVEL == 0:
+            start_time = pygame.time.get_ticks()
             if main_menu(screen):
                 break
         if LEVEL < 3:
