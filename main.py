@@ -339,7 +339,7 @@ def generate_map(map_size: int) -> List[List[str]]:
 
     return layout
 
-def main_menu(screen) -> bool:
+def main_menu(screen: pygame.Surface) -> bool:
     """Main menu function."""
     font = pygame.font.Font(None, 128)
     play_text = font.render('Play', True, WHITE)
@@ -364,7 +364,7 @@ def main_menu(screen) -> bool:
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
-def score(screen, start_time, player):
+def score(screen: pygame.Surface, start_time: int, player: int):
     """Score function."""
     font = pygame.font.Font(None, 128)
     time = (pygame.time.get_ticks() - start_time) / 1000
@@ -396,7 +396,7 @@ def score(screen, start_time, player):
             screen.blit(one_hit_text, one_hit_rect)
         pygame.display.update()
 
-def game_over(screen):
+def game_over(screen: pygame.Surface):
     """Game over function."""
     font = pygame.font.Font(None, 128)
     over_text = font.render('Game Over', True, WHITE)
@@ -409,7 +409,7 @@ def game_over(screen):
     while True:
         keys = pygame.key.get_pressed()
         if keys[K_ESCAPE]:
-            return None
+            break
         for event in pygame.event.get():
             if event.type == QUIT:
                 return None
@@ -421,7 +421,7 @@ def game_over(screen):
             screen.blit(pacifist_text, pacifist_rect)
         pygame.display.update()
 
-def level(screen):
+def level(screen: pygame.Surface):
     """Level function."""
     clock = pygame.time.Clock()
     pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -451,7 +451,7 @@ def level(screen):
         pygame.display.update()
         clock.tick(60)
 
-def boss(screen):
+def boss(screen: pygame.Surface):
     """Boss Level function."""
     clock = pygame.time.Clock()
     layout = [['#', '#', '#', '#', '#', '#', '#', '#'],
@@ -468,7 +468,7 @@ def boss(screen):
 
         if enemy.hp <= 0:
             del enemy
-            return None
+            break
 
         if player.hp <= 0:
             game_over(screen)
@@ -480,13 +480,13 @@ def boss(screen):
     
     return player.hp
 
-def create_player(layout):
+def create_player(layout: List[List[str]]):
     """Player creation function."""
     for i in range(1, MAP_SIZE - 2):
         if layout[MAP_SIZE - 2][i] == ' ':
             return Player(i*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
 
-def create_enemy(layout):
+def create_enemy(layout: List[List[str]]):
     """Enemy creation function."""
     enemy = pygame.sprite.Group()
     tile_2 = TILE_SIZE // 2
@@ -528,11 +528,11 @@ def handle_events(player, enemy) -> bool:
 
     return True
 
-def entity_update(delta_time, layout, player, enemy):
+def entity_update(delta_time, layout: List[List[str]], player, enemy):
     player.update(delta_time, layout)
     enemy.update(delta_time, layout, player)
 
-def update_camera(player, layout, screen):
+def update_camera(player, layout: List[List[str]], screen: pygame.Surface):
     """Camera update function."""
     camera_x = min(max(player.rect.centerx - screen.get_width() // 2, 0),
                     len(layout[0])*TILE_SIZE - screen.get_width())
@@ -541,7 +541,7 @@ def update_camera(player, layout, screen):
 
     return camera_x, camera_y
 
-def draw(screen, layout, enemies, player, camera_x, camera_y):
+def draw(screen: pygame.Surface, layout: List[List[str]], enemies, player, camera_x, camera_y):
     """Draw function."""
     screen.fill(BLACK)
     for y, row in enumerate(layout):
@@ -559,7 +559,7 @@ def draw(screen, layout, enemies, player, camera_x, camera_y):
         enemies.draw(screen)
     player.draw(screen)
 
-def next_level(layout, player, camera_x, camera_y) -> bool:
+def next_level(layout: List[List[str]], player, camera_x, camera_y) -> bool:
     """Check for level exit."""
     global LEVEL
     for y, row in enumerate(layout):
@@ -594,11 +594,7 @@ def reset_positions(enemies, camera_x, camera_y, player):
 def main():
     """Main function."""
     global LEVEL
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Game')
-
-    start_time = pygame.time.get_ticks()
+    screen = init_game()
 
     while True:
         if LEVEL == 0:
@@ -613,6 +609,12 @@ def main():
             LEVEL = 0
 
     pygame.quit()
+
+def init_game()
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption('Game')
+    return screen
 
 if __name__ == '__main__':
     main()
