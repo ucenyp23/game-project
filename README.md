@@ -2,17 +2,14 @@
 Python game using the Pygame libraly.
 
 ## TODO
-- Creadits
-
-## All
-- [ ] Player
-  - [ ] Ram
-  - [ ] Jump
-  - [ ] Movement
-  - [ ] Roll
+- [/] Player
+  - [X] Movement
+  - [/] Jump
   - [ ] Dash
-  - [ ] Pary
+  - [ ] Roll
+  - [ ] Ram
   - [ ] Combo
+  - [ ] Pary
 - [ ] Conditions
   - [ ] Curse
   - [ ] Ice
@@ -21,25 +18,30 @@ Python game using the Pygame libraly.
   - [ ] Bleeding
   - [ ] Poison
 - [ ] Enemies
-  - [ ] Kamikaze
-  - [ ] Slasher
-- [ ] Random Level Generation
-- [ ] Boss
-  - [ ] Scarecrow
-  - [ ] The Hand of the King
+  - [ ] Grebadier
+  - [/] Kamikaze
+  - [/] Slasher
+  - [ ] Sweeper
+  - [ ] Caster
+  - [ ] Lancer
+- [/] Random Level Generation
+- [/] Boss
+  - [ ] Stone Warden
+  - [/] Scarecrow
   - [ ] Queen
-- [ ] Weapons
-- [ ] Fighting
+- [/] Weapons
+  - [/] Sword
+  - [ ] Spear
+  - [ ] Dagger
+  - [ ] Bow
 - [ ] Outfits
-- [ ] Polish
-  - [ ] Achivemets
+- [/] Polish
+  - [/] Achivemets
   - [ ] Graphics
-  - [ ] Shaders
-  - [ ] Main Menu
-  - [ ] Scoreboard
+  - [/] Main Menu
+  - [/] Scoreboard
   - [ ] Map
   - [ ] Setting
-- [ ] Credits
 
 ## License
 This project is [Unlicense](https://unlicense.org/) licensed.
