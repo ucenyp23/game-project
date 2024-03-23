@@ -16,6 +16,7 @@ SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
 LEVEL = 0
+ATTACK = False
 
 class Player(pygame.sprite.Sprite):
     """Player sprite class."""
@@ -90,14 +91,24 @@ class Player(pygame.sprite.Sprite):
 
     def attack(self, enemies):
         """Attack function."""
-        global LEVEL
+        global LEVEL, ATTACK
+        if not ATTACK:
+            ATTACK = True
         if LEVEL < 3:
             for enemy in enemies:
                 if self.sword_rect.colliderect(enemy.rect):
                     enemy.hp -= 128
+                    if self.hp + 128 <= 1024:
+                        self.hp += 128
+                    else:
+                        self.hp = 1024
         else:
             if self.sword_rect.colliderect(enemies.rect):
                 enemies.hp -= 128
+                if self.hp + 128 <= 1024:
+                    self.hp += 128
+                else:
+                    self.hp = 1024
 
     def draw(self, screen):
         """Player draw function."""
@@ -353,15 +364,21 @@ def main_menu(screen) -> bool:
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
-def score(screen, start_time):
+def score(screen, start_time, player):
     """Score function."""
     font = pygame.font.Font(None, 128)
     time = (pygame.time.get_ticks() - start_time) / 1000
     minute = math.floor(time / 60)
     second = math.floor(time) % 60
     score_text = font.render('Time: ' + str(minute) + ':' + str(second), True, WHITE)
+    codebreaker_text = font.render('Achivement: Codebreaker', True, WHITE)
+    one_hit_text = font.render('Achivement: One Hit', True, WHITE)
     score_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
-    SCREEN_HEIGHT // 2 - score_text.get_height() // 2, score_text.get_width(), score_text.get_height())
+    SCREEN_HEIGHT // 2 - score_text.get_height(), score_text.get_width(), score_text.get_height())
+    codebreaker_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 + score_text.get_height(), score_text.get_width(), score_text.get_height())
+    one_hit_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 + 2 * score_text.get_height(), score_text.get_width(), score_text.get_height())
 
     while True:
         keys = pygame.key.get_pressed()
@@ -373,13 +390,20 @@ def score(screen, start_time):
 
         screen.fill(BLACK)
         screen.blit(score_text, score_rect)
+        if time <= 60:
+            screen.blit(codebreaker_text, codebreaker_rect)
+        if player <= 128:
+            screen.blit(one_hit_text, one_hit_rect)
         pygame.display.update()
 
 def game_over(screen):
     """Game over function."""
     font = pygame.font.Font(None, 128)
     over_text = font.render('Game Over', True, WHITE)
-    over_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width() // 2,
+    over_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width(),
+    SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
+    pacifist_text = font.render('Achivement: Pacifist', True, WHITE)
+    pacifist_rect = pygame.Rect(SCREEN_WIDTH // 2 + over_text.get_width(),
     SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
 
     while True:
@@ -390,13 +414,17 @@ def game_over(screen):
             if event.type == QUIT:
                 return None
 
+        global LEVEL, ATTACK
         screen.fill(BLACK)
         screen.blit(over_text, over_rect)
+        if LEVEL == 3 and ATTACK is False:
+            screen.blit(pacifist_text, pacifist_rect)
         pygame.display.update()
 
 def level(screen):
     """Level function."""
     clock = pygame.time.Clock()
+    pygame.time.set_timer(pygame.USEREVENT, 1000)
     layout = generate_map(MAP_SIZE)
     player = create_player(layout)
     enemies = create_enemy(layout)
@@ -412,6 +440,8 @@ def level(screen):
 
         if player.hp <= 0:
             game_over(screen)
+            global LEVEL
+            LEVEL = 0
             break
 
         draw(screen, layout, enemies, player, camera_x, camera_y)
@@ -447,6 +477,8 @@ def boss(screen):
         draw(screen, layout, enemy, player, camera_x, camera_y)
         pygame.display.update()
         clock.tick(60)
+    
+    return player.hp
 
 def create_player(layout):
     """Player creation function."""
@@ -487,6 +519,8 @@ def handle_events(player, enemy) -> bool:
             global LEVEL
             LEVEL = 0
             return False
+        if event.type == pygame.USEREVENT:
+            player.hp -= 16
         if event.type == KEYUP and event.key == K_SPACE:
             player.jump()
         elif event.type == MOUSEBUTTONDOWN:
@@ -574,8 +608,8 @@ def main():
         if LEVEL < 3:
             level(screen)
         elif LEVEL == 3:
-            boss(screen)
-            score(screen, start_time)
+            player = boss(screen)
+            score(screen, start_time, player)
             LEVEL = 0
 
     pygame.quit()

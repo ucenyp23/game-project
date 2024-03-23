@@ -2,8 +2,10 @@
 Python game using the Pygame libraly.
 
 ## TODO
-- [ ] Player HP decreses by one every second
-- [ ] Enemies drop HP
+- [ ] Player
+
+
+
 - [ ] Achievements
   - [ ] Defeat Boss
   - [ ] Codebreaker (Beat Developer Time)
