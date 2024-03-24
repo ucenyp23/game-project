@@ -1,9 +1,9 @@
 """This module contains a simple game using pygame."""
-from pygame import K_a, K_d, K_SPACE, K_ESCAPE, KEYUP, QUIT, MOUSEBUTTONDOWN
-from typing import List
 import random
 import math
+from typing import List
 import pygame
+from pygame import K_a, K_d, K_SPACE, K_ESCAPE, KEYUP, QUIT, MOUSEBUTTONDOWN
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -15,7 +15,6 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 256
 MAP_SIZE = 17
-LEVEL = 0
 ATTACK = False
 
 class Player(pygame.sprite.Sprite):
@@ -25,7 +24,8 @@ class Player(pygame.sprite.Sprite):
         self.image = self._create_surface((64, 128), GREEN)
         self.rect = self.image.get_rect(centerx=position_x, bottom=position_y)
         self.sword_image = self._create_surface((96, 96), BLUE)
-        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
+        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx,
+                                                    centery=self.rect.centery)
         self.vel = pygame.Vector2(0, 0)
         self.jump_counter = 0
         self.speed = 1024
@@ -89,12 +89,12 @@ class Player(pygame.sprite.Sprite):
             self.vel.y = -self.speed
             self.jump_counter += 1
 
-    def attack(self, enemies):
+    def attack(self, enemies, iterable: bool):
         """Attack function."""
-        global LEVEL, ATTACK
+        global ATTACK
         if not ATTACK:
             ATTACK = True
-        if LEVEL < 3:
+        if iterable:
             for enemy in enemies:
                 if self.sword_rect.colliderect(enemy.rect):
                     enemy.hp -= 128
@@ -136,7 +136,9 @@ class Kamikaze(pygame.sprite.Sprite):
         return surface
 
     def enabled(self, player):
-        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
+        """Enable movement function."""
+        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and \
+            -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
             self.enable = True
 
     def move(self, player, layout, delta_time):
@@ -146,7 +148,8 @@ class Kamikaze(pygame.sprite.Sprite):
         screen_width_half = SCREEN_WIDTH // 2
         screen_height_half = SCREEN_HEIGHT // 2
 
-        distance_to_player = ((player_center_x - self.rect.centerx)**2 + (player_center_y - self.rect.centery)**2)**0.5
+        distance_to_player = ((player_center_x - self.rect.centerx)**2 + \
+                                (player_center_y - self.rect.centery)**2)**0.5
         if distance_to_player <= 1000:
             direction = pygame.Vector2((player_center_x - self.rect.centerx) / screen_width_half,
                                         (player_center_y - self.rect.centery) / screen_height_half)
@@ -204,7 +207,8 @@ class Slasher(pygame.sprite.Sprite):
         self.image = self._create_surface((64, 128), RED)
         self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
         self.sword_image = pygame.Surface((128, 64))
-        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
+        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx,
+                                                    centery=self.rect.centery)
         self.enable = False
         self.hp = 256
 
@@ -215,7 +219,9 @@ class Slasher(pygame.sprite.Sprite):
         return surface
 
     def enabled(self, player):
-        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
+        """Enable movement function."""
+        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and \
+            -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
             self.enable = True
 
     def move(self, player):
@@ -250,7 +256,8 @@ class Scarecrow(pygame.sprite.Sprite):
         self.image = self._create_surface((96, 192), RED)
         self.rect = self.image.get_rect(centerx = position_x, bottom = position_y)
         self.sword_image = pygame.Surface((128, 128))
-        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx, centery=self.rect.centery)
+        self.sword_rect = self.sword_image.get_rect(centerx=self.rect.centerx,
+                                                    centery=self.rect.centery)
         self.hp = 2048
 
     @staticmethod
@@ -281,8 +288,10 @@ class Scarecrow(pygame.sprite.Sprite):
     def draw(self, screen):
         """Slasher draw function."""
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, "red", ((SCREEN_WIDTH // 2) - 512, 32, 1024, 64))
-        pygame.draw.rect(screen, "green", ((SCREEN_WIDTH // 2) - 512, 32, 1024*(self.hp / 2048), 64))
+        pygame.draw.rect(screen, "red",
+                        ((SCREEN_WIDTH // 2) - 512, 32, 1024, 64))
+        pygame.draw.rect(screen, "green",
+                        ((SCREEN_WIDTH // 2) - 512, 32, 1024*(self.hp / 2048), 64))
 
 def generate_map(map_size: int) -> List[List[str]]:
     """Map generation function"""
@@ -364,7 +373,7 @@ def main_menu(screen: pygame.Surface) -> bool:
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
-def score(screen: pygame.Surface, start_time: int, player: int) -> None:
+def score(screen: pygame.Surface, start_time: int, hp: int) -> None:
     """Score function."""
     font = pygame.font.Font(None, 128)
     time = (pygame.time.get_ticks() - start_time) / 1000
@@ -374,11 +383,14 @@ def score(screen: pygame.Surface, start_time: int, player: int) -> None:
     codebreaker_text = font.render('Achivement: Codebreaker', True, WHITE)
     one_hit_text = font.render('Achivement: One Hit', True, WHITE)
     score_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
-    SCREEN_HEIGHT // 2 - score_text.get_height(), score_text.get_width(), score_text.get_height())
-    codebreaker_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
-    SCREEN_HEIGHT // 2 + score_text.get_height(), score_text.get_width(), score_text.get_height())
-    one_hit_rect = pygame.Rect(SCREEN_WIDTH // 2 - score_text.get_width() // 2,
-    SCREEN_HEIGHT // 2 + 2 * score_text.get_height(), score_text.get_width(), score_text.get_height())
+                                SCREEN_HEIGHT // 2 - score_text.get_height(),
+                                score_text.get_width(), score_text.get_height())
+    codebreaker_rect = pygame.Rect(SCREEN_WIDTH // 2 - codebreaker_text.get_width() // 2,
+                                SCREEN_HEIGHT // 2 + codebreaker_text.get_height(),
+                                codebreaker_text.get_width(), codebreaker_text.get_height())
+    one_hit_rect = pygame.Rect(SCREEN_WIDTH // 2 - one_hit_text.get_width() // 2,
+                                SCREEN_HEIGHT // 2 + 2 * one_hit_text.get_height(),
+                                one_hit_text.get_width(), one_hit_text.get_height())
 
     while True:
         keys = pygame.key.get_pressed()
@@ -392,7 +404,7 @@ def score(screen: pygame.Surface, start_time: int, player: int) -> None:
         screen.blit(score_text, score_rect)
         if time <= 60:
             screen.blit(codebreaker_text, codebreaker_rect)
-        if player <= 128:
+        if hp <= 128:
             screen.blit(one_hit_text, one_hit_rect)
         pygame.display.update()
 
@@ -400,36 +412,36 @@ def game_over(screen: pygame.Surface) -> None:
     """Game over function."""
     font = pygame.font.Font(None, 128)
     over_text = font.render('Game Over', True, WHITE)
-    over_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width(),
-    SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
+    over_rect = pygame.Rect(SCREEN_WIDTH // 2 - over_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 - over_text.get_height(), over_text.get_width(), over_text.get_height())
     pacifist_text = font.render('Achivement: Pacifist', True, WHITE)
-    pacifist_rect = pygame.Rect(SCREEN_WIDTH // 2 + over_text.get_width(),
-    SCREEN_HEIGHT // 2 - over_text.get_height() // 2, over_text.get_width(), over_text.get_height())
+    pacifist_rect = pygame.Rect(SCREEN_WIDTH // 2 - pacifist_text.get_width() // 2,
+    SCREEN_HEIGHT // 2 + pacifist_text.get_height(), pacifist_text.get_width(), pacifist_text.get_height())
 
     while True:
         keys = pygame.key.get_pressed()
         if keys[K_ESCAPE]:
-            break
+            return None
         for event in pygame.event.get():
             if event.type == QUIT:
                 return None
 
-        global LEVEL, ATTACK
+        global ATTACK
         screen.fill(BLACK)
         screen.blit(over_text, over_rect)
-        if LEVEL == 3 and ATTACK is False:
+        if ATTACK is False:
             screen.blit(pacifist_text, pacifist_rect)
         pygame.display.update()
 
-def level(screen: pygame.Surface) -> None:
+def level(screen: pygame.Surface, scene_id: int) -> None:
     """Level function."""
     clock = pygame.time.Clock()
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     layout = generate_map(MAP_SIZE)
     player = create_player(layout)
-    enemies = create_enemy(layout)
+    enemies = create_enemy(layout, scene_id)
 
-    while handle_events(player, enemies):
+    while handle_events(True, player, enemies):
         entity_update(clock.get_time() / 1000, layout, player, enemies)
         camera_x, camera_y = update_camera(player, layout, screen)
         update_positions(enemies, camera_x, camera_y, player)
@@ -440,16 +452,15 @@ def level(screen: pygame.Surface) -> None:
 
         if player.hp <= 0:
             game_over(screen)
-            global LEVEL
-            LEVEL = 0
-            break
+            return 0
 
-        draw(screen, layout, enemies, player, camera_x, camera_y)
+        draw(screen, layout, enemies, player, camera_x, camera_y, True)
         reset_positions(enemies, camera_x, camera_y, player)
         if next_level(layout, player, camera_x, camera_y):
-            break
+            return (scene_id + 1)
         pygame.display.update()
         clock.tick(60)
+    return scene_id
 
 def boss(screen: pygame.Surface) -> int:
     """Boss Level function."""
@@ -463,30 +474,29 @@ def boss(screen: pygame.Surface) -> int:
     enemy = Scarecrow(6*TILE_SIZE + TILE_SIZE // 2, 4*TILE_SIZE)
     camera_x, camera_y = 0, 40
 
-    while handle_events(player, enemy):
+    while handle_events(False, player, enemy):
         entity_update(clock.get_time() / 1000, layout, player, enemy)
 
         if enemy.hp <= 0:
             del enemy
-            break
+            return player.hp
 
         if player.hp <= 0:
             game_over(screen)
-            break
+            return None
 
-        draw(screen, layout, enemy, player, camera_x, camera_y)
+        draw(screen, layout, enemy, player, camera_x, camera_y, False)
         pygame.display.update()
         clock.tick(60)
-    
-    return player.hp
 
 def create_player(layout: List[List[str]]):
     """Player creation function."""
     for i in range(1, MAP_SIZE - 2):
         if layout[MAP_SIZE - 2][i] == ' ':
             return Player(i*TILE_SIZE + TILE_SIZE // 2, (MAP_SIZE - 1)*TILE_SIZE)
+    return None
 
-def create_enemy(layout: List[List[str]]):
+def create_enemy(layout: List[List[str]], scene_id: int):
     """Enemy creation function."""
     enemy = pygame.sprite.Group()
     tile_2 = TILE_SIZE // 2
@@ -496,18 +506,18 @@ def create_enemy(layout: List[List[str]]):
         while True:
             i, j = random.randrange(1, size_1), random.randrange(1, size_1, 2)
             if layout[i][j] == ' ' and (layout[i + 1][j] == '#' or layout[i - 1][j] == '#'):
-                if LEVEL == 0:
+                if scene_id == 1:
                     enemy.add(Kamikaze(j*TILE_SIZE + tile_2, i*TILE_SIZE))
-                elif LEVEL == 1:
+                elif scene_id == 2:
                     enemy.add(Slasher(j*TILE_SIZE + tile_2, (i + 1)*TILE_SIZE))
-                elif LEVEL == 2:
+                elif scene_id == 3:
                     enemy.add(random.choice([Kamikaze(j*TILE_SIZE + tile_2, i*TILE_SIZE),
                                             Slasher(j*TILE_SIZE + tile_2, (i + 1)*TILE_SIZE)]))
                 break
 
     return enemy
 
-def handle_events(player, enemy) -> bool:
+def handle_events(iterable: bool, player, enemy) -> bool:
     """Events handling function."""
     keys = pygame.key.get_pressed()
     player.move(-1 if keys[K_a] and not keys[K_d] else
@@ -516,19 +526,18 @@ def handle_events(player, enemy) -> bool:
     for event in pygame.event.get():
         if (event.type == QUIT or
             (event.type == KEYUP and event.key == K_ESCAPE)):
-            global LEVEL
-            LEVEL = 0
             return False
         if event.type == pygame.USEREVENT:
             player.hp -= 16
         if event.type == KEYUP and event.key == K_SPACE:
             player.jump()
         elif event.type == MOUSEBUTTONDOWN:
-            player.attack(enemy)
+            player.attack(enemy, iterable)
 
     return True
 
 def entity_update(delta_time: float, layout: List[List[str]], player, enemy) -> None:
+    """Update entity function."""
     player.update(delta_time, layout)
     enemy.update(delta_time, layout, player)
 
@@ -541,18 +550,20 @@ def update_camera(player, layout: List[List[str]], screen: pygame.Surface):
 
     return camera_x, camera_y
 
-def draw(screen: pygame.Surface, layout: List[List[str]], enemies, player, camera_x, camera_y) -> None:
+def draw(screen: pygame.Surface, layout: List[List[str]], enemies,
+            player, camera_x, camera_y, iterate: bool) -> None:
     """Draw function."""
     screen.fill(BLACK)
     for y, row in enumerate(layout):
         if y*TILE_SIZE - camera_y >= 0 or y*TILE_SIZE - camera_y <= SCREEN_WIDTH:
             for x, tile in enumerate(row):
-                if (tile in ['#', 'E'] and (x*TILE_SIZE - camera_x >= 0 or x*TILE_SIZE - camera_x <= SCREEN_HEIGHT)):
-                    tile_rect = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE - camera_y), TILE_SIZE, TILE_SIZE)
+                if (tile in ['#', 'E'] and (x*TILE_SIZE - camera_x >= 0 or \
+                    x*TILE_SIZE - camera_x <= SCREEN_HEIGHT)):
+                    tile_rect = pygame.Rect((x*TILE_SIZE - camera_x),
+                                            (y*TILE_SIZE - camera_y), TILE_SIZE, TILE_SIZE)
                     pygame.draw.rect(screen, WHITE if tile == '#' else YELLOW, tile_rect)
 
-    global LEVEL
-    if LEVEL < 3:
+    if iterate:
         for enemy in enemies:
             enemy.draw(screen)
     else:
@@ -561,13 +572,12 @@ def draw(screen: pygame.Surface, layout: List[List[str]], enemies, player, camer
 
 def next_level(layout: List[List[str]], player, camera_x: int, camera_y: int) -> bool:
     """Check for level exit."""
-    global LEVEL
     for y, row in enumerate(layout):
         for x, tile in enumerate(row):
             if tile == 'E':
-                tile_rect = pygame.Rect((x*TILE_SIZE - camera_x), (y*TILE_SIZE) - camera_y, TILE_SIZE, TILE_SIZE)
+                tile_rect = pygame.Rect((x*TILE_SIZE - camera_x),
+                                        (y*TILE_SIZE) - camera_y, TILE_SIZE, TILE_SIZE)
                 if player.rect.colliderect(tile_rect):
-                    LEVEL += 1
                     return True
     return False
 
@@ -592,30 +602,28 @@ def reset_positions(enemies, camera_x: int, camera_y: int, player) -> None:
         enemy.rect.centery += camera_y
 
 def init_game() -> pygame.Surface:
+    """Init pygame function."""
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Game')
     return screen
 
-def main(level: int = 0) -> None:
+def main(scene_id: int = 0) -> None:
     """Main function."""
     screen = init_game()
-    
-    start_time = pygame.time.get_ticks()
-    if main_menu(screen):
-        return None
 
     while True:
-        if LEVEL == 0:
+        if scene_id == 0:
             start_time = pygame.time.get_ticks()
             if main_menu(screen):
                 return None
-        if LEVEL < 3:
-            level(screen)
-        elif LEVEL == 3:
-            player = boss(screen)
-            score(screen, start_time, player)
-            LEVEL = 0
+            scene_id = 1
+        elif scene_id != 4:
+            scene_id = level(screen, scene_id)
+        else:
+            hp = boss(screen)
+            score(screen, start_time, hp)
+            scene_id = 0
 
 if __name__ == '__main__':
     main()
