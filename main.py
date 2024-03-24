@@ -364,7 +364,7 @@ def main_menu(screen: pygame.Surface) -> bool:
         screen.blit(quit_text, quit_rect)
         pygame.display.update()
 
-def score(screen: pygame.Surface, start_time: int, player: int):
+def score(screen: pygame.Surface, start_time: int, player: int) -> None:
     """Score function."""
     font = pygame.font.Font(None, 128)
     time = (pygame.time.get_ticks() - start_time) / 1000
@@ -396,7 +396,7 @@ def score(screen: pygame.Surface, start_time: int, player: int):
             screen.blit(one_hit_text, one_hit_rect)
         pygame.display.update()
 
-def game_over(screen: pygame.Surface):
+def game_over(screen: pygame.Surface) -> None:
     """Game over function."""
     font = pygame.font.Font(None, 128)
     over_text = font.render('Game Over', True, WHITE)
@@ -421,7 +421,7 @@ def game_over(screen: pygame.Surface):
             screen.blit(pacifist_text, pacifist_rect)
         pygame.display.update()
 
-def level(screen: pygame.Surface):
+def level(screen: pygame.Surface) -> None:
     """Level function."""
     clock = pygame.time.Clock()
     pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -451,7 +451,7 @@ def level(screen: pygame.Surface):
         pygame.display.update()
         clock.tick(60)
 
-def boss(screen: pygame.Surface):
+def boss(screen: pygame.Surface) -> int:
     """Boss Level function."""
     clock = pygame.time.Clock()
     layout = [['#', '#', '#', '#', '#', '#', '#', '#'],
@@ -528,7 +528,7 @@ def handle_events(player, enemy) -> bool:
 
     return True
 
-def entity_update(delta_time, layout: List[List[str]], player, enemy):
+def entity_update(delta_time: float, layout: List[List[str]], player, enemy) -> None:
     player.update(delta_time, layout)
     enemy.update(delta_time, layout, player)
 
@@ -541,7 +541,7 @@ def update_camera(player, layout: List[List[str]], screen: pygame.Surface):
 
     return camera_x, camera_y
 
-def draw(screen: pygame.Surface, layout: List[List[str]], enemies, player, camera_x, camera_y):
+def draw(screen: pygame.Surface, layout: List[List[str]], enemies, player, camera_x, camera_y) -> None:
     """Draw function."""
     screen.fill(BLACK)
     for y, row in enumerate(layout):
@@ -571,7 +571,7 @@ def next_level(layout: List[List[str]], player, camera_x: int, camera_y: int) ->
                     return True
     return False
 
-def update_positions(enemies, camera_x: int, camera_y: int, player):
+def update_positions(enemies, camera_x: int, camera_y: int, player) -> None:
     """Update position function."""
     player.rect.centerx -= camera_x
     player.rect.centery -= camera_y
@@ -581,7 +581,7 @@ def update_positions(enemies, camera_x: int, camera_y: int, player):
         enemy.rect.centerx -= camera_x
         enemy.rect.centery -= camera_y
 
-def reset_positions(enemies, camera_x: int, camera_y: int, player):
+def reset_positions(enemies, camera_x: int, camera_y: int, player) -> None:
     """Reset position function."""
     player.rect.centerx += camera_x
     player.rect.centery += camera_y
@@ -597,16 +597,19 @@ def init_game() -> pygame.Surface:
     pygame.display.set_caption('Game')
     return screen
 
-def main():
+def main(level: int = 0) -> None:
     """Main function."""
-    global LEVEL
     screen = init_game()
+    
+    start_time = pygame.time.get_ticks()
+    if main_menu(screen):
+        return None
 
     while True:
         if LEVEL == 0:
             start_time = pygame.time.get_ticks()
             if main_menu(screen):
-                break
+                return None
         if LEVEL < 3:
             level(screen)
         elif LEVEL == 3:
@@ -614,7 +617,6 @@ def main():
             score(screen, start_time, player)
             LEVEL = 0
 
-    pygame.quit()
-
 if __name__ == '__main__':
     main()
+    pygame.quit()
