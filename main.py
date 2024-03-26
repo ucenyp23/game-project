@@ -137,8 +137,8 @@ class Kamikaze(pygame.sprite.Sprite):
 
     def enabled(self, player):
         """Enable movement function."""
-        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and \
-            -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
+        if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
+            -1.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 1.5*TILE_SIZE:
             self.enable = True
 
     def move(self, player, layout, delta_time):
@@ -499,7 +499,6 @@ def create_player(layout: List[List[str]]):
 def create_enemy(layout: List[List[str]], scene_id: int):
     """Enemy creation function."""
     enemy = pygame.sprite.Group()
-    tile_2 = TILE_SIZE // 2
     size_1 = MAP_SIZE - 1
 
     for _ in range(random.randrange(9, 13)):
@@ -507,12 +506,12 @@ def create_enemy(layout: List[List[str]], scene_id: int):
             i, j = random.randrange(1, size_1), random.randrange(1, size_1, 2)
             if layout[i][j] == ' ' and (layout[i + 1][j] == '#' or layout[i - 1][j] == '#'):
                 if scene_id == 1:
-                    enemy.add(Kamikaze(j*TILE_SIZE + tile_2, i*TILE_SIZE))
+                    enemy.add(Kamikaze(j*TILE_SIZE + random.randint(16, TILE_SIZE - 16), i*TILE_SIZE))
                 elif scene_id == 2:
-                    enemy.add(Slasher(j*TILE_SIZE + tile_2, (i + 1)*TILE_SIZE))
+                    enemy.add(Slasher(j*TILE_SIZE + random.randint(32, TILE_SIZE - 32), (i + 1)*TILE_SIZE))
                 elif scene_id == 3:
-                    enemy.add(random.choice([Kamikaze(j*TILE_SIZE + tile_2, i*TILE_SIZE),
-                                            Slasher(j*TILE_SIZE + tile_2, (i + 1)*TILE_SIZE)]))
+                    enemy.add(random.choice([Kamikaze(j*TILE_SIZE + random.randint(16, TILE_SIZE - 16), i*TILE_SIZE),
+                                            Slasher(j*TILE_SIZE + random.randint(32, TILE_SIZE - 32), (i + 1)*TILE_SIZE)]))
                 break
 
     return enemy
