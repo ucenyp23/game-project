@@ -2,6 +2,7 @@
 import random
 import math
 from typing import List
+import heapq
 import pygame
 from pygame import K_a, K_d, K_SPACE, K_ESCAPE, KEYUP, QUIT, MOUSEBUTTONDOWN
 
@@ -127,7 +128,6 @@ class Kamikaze(pygame.sprite.Sprite):
         self.speed = 2048
         self.hp = 128
         self.enable = False
-        self.visible = False
 
     @staticmethod
     def _create_surface(size, color):
@@ -141,18 +141,62 @@ class Kamikaze(pygame.sprite.Sprite):
             -1.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 1.5*TILE_SIZE:
             self.enable = True
 
+    @staticmethod
+    def heuristic(a, b):
+        return abs(b[0] - a[0]) + abs(b[1] - a[1])
+
+    def neighbors(self, layout, current):
+        x, y = current
+        directions = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+        neighbors = [(nx, ny) for nx, ny in directions if 0 <= nx < len(layout) and 0 <= ny < len(layout[0]) and layout[nx][ny] != '#']
+        return neighbors
+
+    def a_star_search(self, layout, start, goal):
+        frontier = []
+        heapq.heappush(frontier, (0, start))
+        came_from = {start: None}
+        cost_so_far = {start: 0}
+
+        while frontier:
+            _, current = heapq.heappop(frontier)
+
+            if current == goal:
+                break
+
+            for next in self.neighbors(layout, current):
+                new_cost = cost_so_far[current] + 1
+                if next not in cost_so_far or new_cost < cost_so_far[next]:
+                    cost_so_far[next] = new_cost
+                    priority = new_cost + self.heuristic(goal, next)
+                    heapq.heappush(frontier, (priority, next))
+                    came_from[next] = current
+
+        return came_from, cost_so_far
+
+    def reconstruct_path(self, came_from, start, goal):
+        if goal not in came_from:
+            return []
+        current = goal
+        path = []
+        while current != start:
+            path.append(current)
+            current = came_from[current]
+        path.append(start)
+        path.reverse()
+        return path
+
     def move(self, player, layout, delta_time):
         """Move towards the player."""
-        player_center_x = player.rect.centerx
-        player_center_y = player.rect.centery
-        screen_width_half = SCREEN_WIDTH // 2
-        screen_height_half = SCREEN_HEIGHT // 2
+        start = (self.rect.centerx, self.rect.centery)
+        goal = (player.rect.centerx, player.rect.centery)
+        came_from, _ = self.a_star_search(layout, start, goal)
+        path = self.reconstruct_path(came_from, start, goal)
+        print(came_from)
 
-        distance_to_player = ((player_center_x - self.rect.centerx)**2 + \
-                                (player_center_y - self.rect.centery)**2)**0.5
-        if distance_to_player <= 1000:
-            direction = pygame.Vector2((player_center_x - self.rect.centerx) / screen_width_half,
-                                        (player_center_y - self.rect.centery) / screen_height_half)
+        if path:
+            next_step = path[1]
+            direction = pygame.Vector2((next_step[0] - self.rect.centerx) / SCREEN_WIDTH,
+                                        (next_step[1] - self.rect.centery) / SCREEN_HEIGHT)
             self.vel = direction * self.speed
             self.rect.x += self.vel.x * delta_time
             self._collisions(layout, 0)
@@ -220,8 +264,8 @@ class Slasher(pygame.sprite.Sprite):
 
     def enabled(self, player):
         """Enable movement function."""
-        if -TILE_SIZE < (player.rect.centery - self.rect.centery) < TILE_SIZE and \
-            -3*TILE_SIZE < (player.rect.centerx - self.rect.centerx) < 3*TILE_SIZE:
+        if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
+            -1.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 1.5*TILE_SIZE:
             self.enable = True
 
     def move(self, player):
