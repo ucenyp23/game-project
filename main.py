@@ -143,15 +143,19 @@ class Kamikaze(pygame.sprite.Sprite):
 
     @staticmethod
     def heuristic(a, b):
+        """Heuristic function."""
         return abs(b[0] - a[0]) + abs(b[1] - a[1])
 
     def neighbors(self, layout, current):
+        """Neighbors function."""
         x, y = current
         directions = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-        neighbors = [(nx, ny) for nx, ny in directions if 0 <= nx < len(layout) and 0 <= ny < len(layout[0]) and layout[nx][ny] != '#']
+        neighbors = [(nx, ny) for nx, ny in directions if 0 <= nx < len(layout) and \
+                        0 <= ny < len(layout[0]) and layout[nx][ny] != '#']
         return neighbors
 
     def a_star_search(self, layout, start, goal):
+        """A* function."""
         frontier = []
         heapq.heappush(frontier, (0, start))
         came_from = {start: None}
@@ -163,17 +167,18 @@ class Kamikaze(pygame.sprite.Sprite):
             if current == goal:
                 break
 
-            for next in self.neighbors(layout, current):
+            for i in self.neighbors(layout, current):
                 new_cost = cost_so_far[current] + 1
-                if next not in cost_so_far or new_cost < cost_so_far[next]:
-                    cost_so_far[next] = new_cost
-                    priority = new_cost + self.heuristic(goal, next)
-                    heapq.heappush(frontier, (priority, next))
-                    came_from[next] = current
+                if i not in cost_so_far or new_cost < cost_so_far[i]:
+                    cost_so_far[i] = new_cost
+                    priority = new_cost + self.heuristic(goal, i)
+                    heapq.heappush(frontier, (priority, i))
+                    came_from[i] = current
 
         return came_from, cost_so_far
 
     def reconstruct_path(self, came_from, start, goal):
+        """Reconstruct path function."""
         if goal not in came_from:
             return []
         current = goal
@@ -187,16 +192,10 @@ class Kamikaze(pygame.sprite.Sprite):
 
     def move(self, player, layout, delta_time):
         """Move towards the player."""
-        start = (self.rect.centerx, self.rect.centery)
-        goal = (player.rect.centerx, player.rect.centery)
-        came_from, _ = self.a_star_search(layout, start, goal)
-        path = self.reconstruct_path(came_from, start, goal)
-        print(came_from)
-
-        if path:
-            next_step = path[1]
-            direction = pygame.Vector2((next_step[0] - self.rect.centerx) / SCREEN_WIDTH,
-                                        (next_step[1] - self.rect.centery) / SCREEN_HEIGHT)
+        if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
+            -0.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 0.5*TILE_SIZE:
+            direction = pygame.Vector2((player.rect.centerx - self.rect.centerx) / SCREEN_WIDTH,
+                                        (player.rect.centery - self.rect.centery) / SCREEN_HEIGHT)
             self.vel = direction * self.speed
             self.rect.x += self.vel.x * delta_time
             self._collisions(layout, 0)
@@ -460,7 +459,8 @@ def game_over(screen: pygame.Surface) -> None:
     SCREEN_HEIGHT // 2 - over_text.get_height(), over_text.get_width(), over_text.get_height())
     pacifist_text = font.render('Achivement: Pacifist', True, WHITE)
     pacifist_rect = pygame.Rect(SCREEN_WIDTH // 2 - pacifist_text.get_width() // 2,
-    SCREEN_HEIGHT // 2 + pacifist_text.get_height(), pacifist_text.get_width(), pacifist_text.get_height())
+    SCREEN_HEIGHT // 2 + pacifist_text.get_height(),
+    pacifist_text.get_width(), pacifist_text.get_height())
 
     while True:
         keys = pygame.key.get_pressed()
@@ -550,12 +550,16 @@ def create_enemy(layout: List[List[str]], scene_id: int):
             i, j = random.randrange(1, size_1), random.randrange(1, size_1, 2)
             if layout[i][j] == ' ' and (layout[i + 1][j] == '#' or layout[i - 1][j] == '#'):
                 if scene_id == 1:
-                    enemy.add(Kamikaze(j*TILE_SIZE + random.randint(16, TILE_SIZE - 16), i*TILE_SIZE))
+                    enemy.add(Kamikaze(j*TILE_SIZE + random.randint(16, TILE_SIZE - 16),
+                                        i*TILE_SIZE))
                 elif scene_id == 2:
-                    enemy.add(Slasher(j*TILE_SIZE + random.randint(32, TILE_SIZE - 32), (i + 1)*TILE_SIZE))
+                    enemy.add(Slasher(j*TILE_SIZE + random.randint(32, TILE_SIZE - 32),
+                                        (i + 1)*TILE_SIZE))
                 elif scene_id == 3:
-                    enemy.add(random.choice([Kamikaze(j*TILE_SIZE + random.randint(16, TILE_SIZE - 16), i*TILE_SIZE),
-                                            Slasher(j*TILE_SIZE + random.randint(32, TILE_SIZE - 32), (i + 1)*TILE_SIZE)]))
+                    enemy.add(random.choice([Kamikaze(j*TILE_SIZE + \
+                                            random.randint(16, TILE_SIZE - 16), i*TILE_SIZE),
+                                            Slasher(j*TILE_SIZE + \
+                                            random.randint(32, TILE_SIZE - 32), (i + 1)*TILE_SIZE)]))
                 break
 
     return enemy
