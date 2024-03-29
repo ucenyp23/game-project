@@ -190,8 +190,16 @@ class Kamikaze(pygame.sprite.Sprite):
         path.reverse()
         return path
 
-    def move(self, player, layout, delta_time):
+    def move(self, player, layout, delta_time, camera_x, camera_y):
         """Move towards the player."""
+        for y, row in enumerate(layout):
+            for x, tile in enumerate(row):
+                tile_rect = pygame.Rect(x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y, TILE_SIZE, TILE_SIZE)
+                if tile_rect.bottom >= player.rect.centerx <= tile_rect.top and tile_rect.right >= player.rect.centery <= tile_rect.left:
+                    print(str(x) + ' ' + str(y))
+                if tile_rect.bottom >= self.rect.centerx <= tile_rect.top and tile_rect.right >= self.rect.centery <= tile_rect.left:
+                    print(str(x) + ' ' + str(y))
+
         if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
             -0.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 0.5*TILE_SIZE:
             direction = pygame.Vector2((player.rect.centerx - self.rect.centerx) / SCREEN_WIDTH,
@@ -205,7 +213,7 @@ class Kamikaze(pygame.sprite.Sprite):
             self.vel = pygame.Vector2(0, 0)
 
 
-    def update(self, delta_time, layout, player):
+    def update(self, delta_time, layout, player, camera_x, camera_y):
         """Kamikaze update function."""
         if player.rect.colliderect(self.rect):
             player.hp -= self.hp
@@ -213,7 +221,7 @@ class Kamikaze(pygame.sprite.Sprite):
         if self.enable is False:
             self.enabled(player)
         else:
-            self.move(player, layout, delta_time)
+            self.move(player, layout, delta_time, camera_x, camera_y)
 
     def _collisions(self, layout, direction):
         for y, row in enumerate(layout):
@@ -272,7 +280,7 @@ class Slasher(pygame.sprite.Sprite):
         self.rect.centerx = player.rect.centerx
         self.rect.centery = player.rect.centery
 
-    def update(self, delta_time, layout, player):
+    def update(self, delta_time, layout, player, camera_x, camera_y):
         """Slasher update function."""
         if self.enable is False:
             self.enabled(player)
@@ -486,8 +494,8 @@ def level(screen: pygame.Surface, scene_id: int) -> None:
     enemies = create_enemy(layout, scene_id)
 
     while handle_events(True, player, enemies):
-        entity_update(clock.get_time() / 1000, layout, player, enemies)
         camera_x, camera_y = update_camera(player, layout, screen)
+        entity_update(clock.get_time() / 1000, layout, player, enemies, camera_x, camera_y)
         update_positions(enemies, camera_x, camera_y, player)
 
         for enemy in enemies:
@@ -583,10 +591,10 @@ def handle_events(iterable: bool, player, enemy) -> bool:
 
     return True
 
-def entity_update(delta_time: float, layout: List[List[str]], player, enemy) -> None:
+def entity_update(delta_time: float, layout: List[List[str]], player, enemy, camera_x, camera_y) -> None:
     """Update entity function."""
     player.update(delta_time, layout)
-    enemy.update(delta_time, layout, player)
+    enemy.update(delta_time, layout, player, camera_x, camera_y)
 
 def update_camera(player, layout: List[List[str]], screen: pygame.Surface):
     """Camera update function."""
