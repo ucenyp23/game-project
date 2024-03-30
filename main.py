@@ -192,13 +192,19 @@ class Kamikaze(pygame.sprite.Sprite):
 
     def move(self, player, layout, delta_time, camera_x, camera_y):
         """Move towards the player."""
-        for y, row in enumerate(layout):
-            for x, tile in enumerate(row):
+        for y in range(len(layout)):
+            for x in range(len(layout)):
                 tile_rect = pygame.Rect(x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y, TILE_SIZE, TILE_SIZE)
-                if tile_rect.bottom >= player.rect.centerx <= tile_rect.top and tile_rect.right >= player.rect.centery <= tile_rect.left:
-                    print(str(x) + ' ' + str(y))
-                if tile_rect.bottom >= self.rect.centerx <= tile_rect.top and tile_rect.right >= self.rect.centery <= tile_rect.left:
-                    print(str(x) + ' ' + str(y))
+                if tile_rect.bottom <= player.rect.centerx and \
+                    player.rect.centerx >= tile_rect.top and \
+                    tile_rect.right <= player.rect.centery and \
+                    player.rect.centery >= tile_rect.left:
+                    print('player: ' + str(x) + ' ' + str(y))
+                if tile_rect.bottom <= self.rect.centerx and \
+                    self.rect.centerx >= tile_rect.top and \
+                    tile_rect.right <= self.rect.centery and \
+                    self.rect.centery >= tile_rect.left:
+                    print('kamikaze: ' + str(x) + ' ' + str(y))
 
         if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
             -0.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 0.5*TILE_SIZE:
@@ -211,7 +217,6 @@ class Kamikaze(pygame.sprite.Sprite):
             self._collisions(layout, 1)
         else:
             self.vel = pygame.Vector2(0, 0)
-
 
     def update(self, delta_time, layout, player, camera_x, camera_y):
         """Kamikaze update function."""
