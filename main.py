@@ -190,7 +190,7 @@ class Kamikaze(pygame.sprite.Sprite):
         path.reverse()
         return path
 
-    def move(self, player, layout, delta_time, camera_x, camera_y):
+    def move(self, player, layout, delta_time):
         """Move towards the player."""
         if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
             -0.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 0.5*TILE_SIZE:
@@ -204,7 +204,7 @@ class Kamikaze(pygame.sprite.Sprite):
         else:
             for y in range(len(layout)):
                 for x in range(len(layout)):
-                    tile_rect = pygame.Rect(x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y, TILE_SIZE, TILE_SIZE)
+                    tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if tile_rect.top <= player.rect.centerx <= tile_rect.bottom and \
                         tile_rect.left <= player.rect.centery <= tile_rect.right:
                         print('player: ' + str(x + 1) + ' ' + str(y + 1))
@@ -212,7 +212,7 @@ class Kamikaze(pygame.sprite.Sprite):
                         tile_rect.left <= self.rect.centery <= tile_rect.right:
                         print('kamikaze: ' + str(x + 1) + ' ' + str(y + 1))
 
-    def update(self, delta_time, layout, player, camera_x, camera_y):
+    def update(self, delta_time, layout, player):
         """Kamikaze update function."""
         if player.rect.colliderect(self.rect):
             player.hp -= self.hp
@@ -220,7 +220,7 @@ class Kamikaze(pygame.sprite.Sprite):
         if self.enable is False:
             self.enabled(player)
         else:
-            self.move(player, layout, delta_time, camera_x, camera_y)
+            self.move(player, layout, delta_time)
 
     def _collisions(self, layout, direction):
         for y, row in enumerate(layout):
@@ -279,7 +279,7 @@ class Slasher(pygame.sprite.Sprite):
         self.rect.centerx = player.rect.centerx
         self.rect.centery = player.rect.centery
 
-    def update(self, delta_time, layout, player, camera_x, camera_y):
+    def update(self, delta_time, layout, player):
         """Slasher update function."""
         if self.enable is False:
             self.enabled(player)
@@ -458,7 +458,7 @@ def score(screen: pygame.Surface, start_time: int, hp: int) -> None:
             screen.blit(one_hit_text, one_hit_rect)
         pygame.display.update()
 
-def game_over(screen: pygame.Surface) -> None:
+def game_over(screen: pygame.Surface, level: bool) -> None:
     """Game over function."""
     font = pygame.font.Font(None, 128)
     over_text = font.render('Game Over', True, WHITE)
@@ -480,7 +480,7 @@ def game_over(screen: pygame.Surface) -> None:
         global ATTACK
         screen.fill(BLACK)
         screen.blit(over_text, over_rect)
-        if ATTACK is False:
+        if ATTACK is False and level is True:
             screen.blit(pacifist_text, pacifist_rect)
         pygame.display.update()
 
@@ -494,7 +494,7 @@ def level(screen: pygame.Surface, scene_id: int) -> None:
 
     while handle_events(True, player, enemies):
         camera_x, camera_y = update_camera(player, layout, screen)
-        entity_update(clock.get_time() / 1000, layout, player, enemies, camera_x, camera_y)
+        entity_update(clock.get_time() / 1000, layout, player, enemies)
         update_positions(enemies, camera_x, camera_y, player)
 
         for enemy in enemies:
@@ -502,7 +502,7 @@ def level(screen: pygame.Surface, scene_id: int) -> None:
                 enemies.remove(enemy)
 
         if player.hp <= 0:
-            game_over(screen)
+            game_over(screen, False)
             return 0
 
         draw(screen, layout, enemies, player, camera_x, camera_y, True)
@@ -533,7 +533,7 @@ def boss(screen: pygame.Surface) -> int:
             return player.hp
 
         if player.hp <= 0:
-            game_over(screen)
+            game_over(screen, True)
             return None
 
         draw(screen, layout, enemy, player, camera_x, camera_y, False)
@@ -590,10 +590,10 @@ def handle_events(iterable: bool, player, enemy) -> bool:
 
     return True
 
-def entity_update(delta_time: float, layout: List[List[str]], player, enemy, camera_x, camera_y) -> None:
+def entity_update(delta_time: float, layout: List[List[str]], player, enemy) -> None:
     """Update entity function."""
     player.update(delta_time, layout)
-    enemy.update(delta_time, layout, player, camera_x, camera_y)
+    enemy.update(delta_time, layout, player)
 
 def update_camera(player, layout: List[List[str]], screen: pygame.Surface):
     """Camera update function."""
