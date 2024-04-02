@@ -207,10 +207,23 @@ class Kamikaze(pygame.sprite.Sprite):
                     tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                     if tile_rect.top <= player.rect.centerx <= tile_rect.bottom and \
                         tile_rect.left <= player.rect.centery <= tile_rect.right:
-                        print('player: ' + str(x + 1) + ' ' + str(y + 1))
+                        player_pos = (x + 1, y + 1)
                     if tile_rect.top <= self.rect.centerx <= tile_rect.bottom and \
                         tile_rect.left <= self.rect.centery <= tile_rect.right:
-                        print('kamikaze: ' + str(x + 1) + ' ' + str(y + 1))
+                        self_pos = (x + 1, y + 1)
+
+            came_from, _ = self.a_star_search(layout, self_pos, player_pos)
+            path = self.reconstruct_path(came_from, self_pos, player_pos)
+
+            if len(path) > 1:
+                next_step = path[1]
+                direction = pygame.Vector2((next_step[0] - self_pos[0]) / SCREEN_WIDTH,
+                                            (next_step[1] - self_pos[1]) / SCREEN_HEIGHT)
+                self.vel = direction * self.speed
+                self.rect.x += self.vel.x * delta_time
+                self._collisions(layout, 0)
+                self.rect.y += self.vel.y * delta_time
+                self._collisions(layout, 1)
 
     def update(self, delta_time, layout, player):
         """Kamikaze update function."""
