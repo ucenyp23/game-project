@@ -193,7 +193,7 @@ class Kamikaze(pygame.sprite.Sprite):
     def move(self, player, layout, delta_time):
         """Move towards the player."""
         if TILE_SIZE >= (player.rect.centery - self.rect.centery) >= 0 and \
-            -0.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 0.5*TILE_SIZE:
+            -1.5*TILE_SIZE <= (player.rect.centerx - self.rect.centerx) <= 1.5*TILE_SIZE:
             direction = pygame.Vector2((player.rect.centerx - self.rect.centerx) / SCREEN_WIDTH,
                                         (player.rect.centery - self.rect.centery) / SCREEN_HEIGHT)
             self.vel = direction * self.speed
@@ -511,7 +511,7 @@ def level(screen: pygame.Surface, scene_id: int) -> None:
             return (scene_id + 1)
         pygame.display.update()
         clock.tick(60)
-    return scene_id
+    return 0
 
 def boss(screen: pygame.Surface) -> int:
     """Boss Level function."""
