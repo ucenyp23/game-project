@@ -217,8 +217,9 @@ class Kamikaze(pygame.sprite.Sprite):
 
             if len(path) > 1:
                 next_step = path[1]
-                direction = pygame.Vector2((next_step[0] - self_pos[0]) / SCREEN_WIDTH,
-                                            (next_step[1] - self_pos[1]) / SCREEN_HEIGHT)
+                direction = pygame.Vector2((next_step[0] - self_pos[0]),
+                                            (next_step[1] - self_pos[1]))
+                print(direction)
                 self.vel = direction * self.speed
                 self.rect.x += self.vel.x * delta_time
                 self._collisions(layout, 0)
@@ -529,6 +530,7 @@ def level(screen: pygame.Surface, scene_id: int) -> None:
 def boss(screen: pygame.Surface) -> int:
     """Boss Level function."""
     clock = pygame.time.Clock()
+    pygame.time.set_timer(pygame.USEREVENT, 1000)
     layout = [['#', '#', '#', '#', '#', '#', '#', '#'],
                 ['#', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
                 ['#', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
